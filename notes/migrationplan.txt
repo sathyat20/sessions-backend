@@ -1,0 +1,20 @@
+PRIMARY
+users 
+instruments 
+artists
+genres
+songs 
+chatrooms
+
+
+SECONDARY
+users_artists, genres, songs
+users_chatroom
+users_instruments
+personal_video_clips
+jam_session
+
+
+TERTIARY
+users_jam_session
+messages(userchat)
