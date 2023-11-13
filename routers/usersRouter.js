@@ -8,8 +8,14 @@ class UsersRouter {
   routes() {
     router.get("/", this.controller.getAll.bind(this.controller));
     router.get("/:userId", this.controller.getOne.bind(this.controller));
+
+    router.get(
+      "/:userId/joinedChatrooms",
+      this.controller.getAllJoinedChatrooms.bind(this.controller)
+    );
+
     router.post("/", this.controller.postOne.bind(this.controller));
-    router.put("/:userId", this.controller.putOne.bind(this.controller))
+    router.put("/:userId", this.controller.putOne.bind(this.controller));
     return router;
   }
 }
