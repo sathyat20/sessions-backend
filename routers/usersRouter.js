@@ -15,6 +15,10 @@ class UsersRouter {
     );
 
     router.post("/", this.controller.postOne.bind(this.controller));
+    router.post(
+      "/postNewComment",
+      this.controller.postMessageToChatroom.bind(this.controller)
+    );
     router.put("/:userId", this.controller.putOne.bind(this.controller));
     return router;
   }

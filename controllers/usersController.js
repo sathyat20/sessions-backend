@@ -1,8 +1,10 @@
 const BaseController = require("./baseController");
 
 class UsersController extends BaseController {
-  constructor(model) {
+  constructor(model, chatroomModel, chatroomMessageModel) {
     super(model);
+    this.chatroomModel = chatroomModel;
+    this.chatroomMessageModel = chatroomMessageModel;
   }
 
   async getOne(req, res) {
@@ -73,7 +75,30 @@ class UsersController extends BaseController {
       const allJoinedChatrooms = await user.getChatrooms();
       return res.json({ success: true, data: allJoinedChatrooms });
     } catch (err) {
-      return res.status(400).json({ success: false, data: err.message });
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
+
+  async postMessageToChatroom(req, res) {
+    const { userId, chatroomId, content } = req.body;
+
+    if (!userId || !chatroomId || !content) {
+      return res.status(400).json({ success: false, msg: "Input error!" });
+    }
+
+    console.log("testing");
+    console.log(userId, chatroomId, content);
+
+    try {
+      console.log(this.chatroomMessageModel);
+      const newChatroomMessage = await this.chatroomMessageModel.create({
+        author_id: userId,
+        chatroom_id: chatroomId,
+        content: content,
+      });
+      return res.json({ success: true, data: newChatroomMessage });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
     }
   }
 }
