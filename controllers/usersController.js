@@ -86,14 +86,14 @@ class UsersController extends BaseController {
       return res.status(400).json({ success: false, msg: "Input error!" });
     }
 
-    console.log("testing");
-    console.log(userId, chatroomId, content);
+    // console.log("testing");
+    // console.log(userId, chatroomId, content);
 
     try {
-      console.log(this.chatroomMessageModel);
+      // console.log(this.chatroomMessageModel);
       const newChatroomMessage = await this.chatroomMessageModel.create({
-        author_id: userId,
-        chatroom_id: chatroomId,
+        authorId: userId,
+        chatroomId: chatroomId,
         content: content,
       });
       return res.json({ success: true, data: newChatroomMessage });

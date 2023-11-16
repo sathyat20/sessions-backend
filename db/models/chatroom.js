@@ -17,8 +17,8 @@ module.exports = (sequelize, DataTypes) => {
     {
       name: { allowNull: false, type: DataTypes.STRING },
       description: { type: DataTypes.TEXT },
-      genres_played: { type: DataTypes.STRING },
-      instruments_wanted: { type: DataTypes.STRING },
+      genresPlayed: { type: DataTypes.STRING },
+      instrumentsWanted: { type: DataTypes.STRING },
     },
     {
       sequelize,

@@ -14,17 +14,25 @@ module.exports = {
      */
     await queryInterface.bulkInsert("chatrooms", [
       {
-        name: "metal heads and goth girls only",
+        name: "Metalheads and Goth Girls",
+        description:
+          "We accept anyone to come to join us for jams! Except taylor swift fans",
+        genres_played: "djent",
         created_at: new Date(),
         updated_at: new Date(),
       },
       {
-        name: "LOFI-KAWAII!11!!",
+        name: "LOFI Tunes, Instrumental jamming",
+        description:
+          "chill instrumental jam sessions, anything goes. We're also looking for a producer to help record and mix songs!",
+        genres_played: "Lo-Fi, Chillhop, Instrumentals",
         created_at: new Date(),
         updated_at: new Date(),
       },
       {
         name: "Blues Jam, any level. Every saturday, venue TBC",
+        description: "nothing like the blues",
+        genres_played: "Rock, Classic Rock",
         created_at: new Date(),
         updated_at: new Date(),
       },

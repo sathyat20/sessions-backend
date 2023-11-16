@@ -8,9 +8,11 @@ const PORT = process.env.PORT;
 
 // importing Routers
 const UsersRouter = require("./routers/usersRouter");
+const ChatroomRouter = require("./routers/chatroomsRouter");
 
 // importing Controllers
 const UsersController = require("./controllers/usersController");
+const ChatroomsController = require("./controllers/chatroomsController");
 
 // importing DB
 const db = require("./db/models/index"); //open up index.js in db/models
@@ -23,8 +25,15 @@ const usersController = new UsersController(
   userChatroomMessage
 );
 
+const chatroomsController = new ChatroomsController(
+  chatroom,
+  user,
+  userChatroomMessage
+);
+
 // inittializing Routers
 const usersRouter = new UsersRouter(usersController).routes();
+const chatroomsRouter = new ChatroomRouter(chatroomsController).routes();
 
 // Enable CORS access to this server
 const corsOptions = {
@@ -37,8 +46,40 @@ app.use(express.urlencoded({ extended: true }));
 
 // using the routers
 app.use("/users", usersRouter);
+app.use("/chatrooms", chatroomsRouter);
 
 //activate backend
 app.listen(PORT, () => {
   console.log(`Express app listening on port ${PORT}!`);
 });
+
+/** SOCKETS CODE */
+const io = require("socket.io")(8080, {
+  cors: { origin: ["http://localhost:3000"] },
+}); // require is a function. so the two brackets.
+
+// a function that runs everytime a client connects to the server.
+io.on("connection", (socket) => {
+  console.log(`New connection made, the socket id is: ${socket.id}`); // random ID assigned to every person connecting to the server.
+
+  // Receiving a send-message from Client
+  socket.on("send-message", (message, chatroomId) => {
+    console.log(
+      `message from frontend/client: ${JSON.stringify(
+        message
+      )} from room ${chatroomId}`
+    );
+
+    // Sending out the same message it received, to the other users in the chat
+    socket.broadcast.emit("receive-message", message); // send to all except self
+    // socket.to(chatroomId).emit("receive-message", message); // broadcast is assumed with the .to method
+  });
+
+  // Receiving a user-typing from Client (i.e. when someone is typing in the chat box)
+  socket.on("user-typing", (userId) => {
+    socket.broadcast.emit("user-typing-response", userId);
+  });
+});
+
+// End of Sockets Code
+///////////
