@@ -9,15 +9,16 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here as further models are added'
-      Chatroom.belongsToMany(models.user, { through: "users_chatrooms" });
+      this.hasMany(models.userChatroomMessage);
+      this.belongsToMany(models.user, { through: "users_chatrooms" });
     }
   }
   Chatroom.init(
     {
       name: { allowNull: false, type: DataTypes.STRING },
       description: { type: DataTypes.TEXT },
-      genres_played: { type: DataTypes.STRING },
-      instruments_wanted: { type: DataTypes.STRING },
+      genresPlayed: { type: DataTypes.STRING },
+      instrumentsWanted: { type: DataTypes.STRING },
     },
     {
       sequelize,
