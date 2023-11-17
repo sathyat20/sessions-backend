@@ -1,8 +1,10 @@
 const BaseController = require("./baseController");
 
 class UsersController extends BaseController {
-  constructor(model, personalVideoClipModel, artistModel, genreModel, instrumentModel, userInstrumentModel) {
+  constructor(model, chatroomModel, chatroomMessageModel, personalVideoClipModel, artistModel, genreModel, instrumentModel, userInstrumentModel) {
     super(model);
+    this.chatroomModel = chatroomModel;
+    this.chatroomMessageModel = chatroomMessageModel;
     this.personalVideoClipModel =  personalVideoClipModel;
     this.artistModel = artistModel;
     this.genreModel = genreModel;
@@ -14,32 +16,33 @@ class UsersController extends BaseController {
     const { userId } = req.params;
     try {
       const user = await this.model.findByPk(
-        userId, 
+        userId
         // {
         //     include:
         //     [
         //         //to be inserted later
         //     ]
         // }
-        );
-      return res.json({success: true, user});
+      );
+      return res.json({ success: true, user });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
   }
+
   async postOne(req, res) {
     const { fullName } = req.body;
     if (!fullName) {
-      res.status(400).json({ success: false, msg: 'input error' })
+      res.status(400).json({ success: false, msg: "input error" });
     }
     try {
       const newUser = await this.model.create({
         fullName,
-        profilePictureUrl: '',
-        bio: '',
-        experience: '',
+        profilePictureUrl: "",
+        bio: "",
+        experience: "",
       });
-      return res.json({ success: true, user: newUser})
+      return res.json({ success: true, user: newUser });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
@@ -71,6 +74,39 @@ class UsersController extends BaseController {
         }
     }
 
+  async getAllJoinedChatrooms(req, res) {
+    const { userId } = req.params;
+    try {
+      const user = await this.model.findByPk(userId);
+      const allJoinedChatrooms = await user.getChatrooms();
+      return res.json({ success: true, data: allJoinedChatrooms });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
+
+  async postMessageToChatroom(req, res) {
+    const { userId, chatroomId, content } = req.body;
+
+    if (!userId || !chatroomId || !content) {
+      return res.status(400).json({ success: false, msg: "Input error!" });
+    }
+
+    // console.log("testing");
+    // console.log(userId, chatroomId, content);
+
+    try {
+      // console.log(this.chatroomMessageModel);
+      const newChatroomMessage = await this.chatroomMessageModel.create({
+        authorId: userId,
+        chatroomId: chatroomId,
+        content: content,
+      });
+      return res.json({ success: true, data: newChatroomMessage });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
       //need method to add videoclip and change associated videoclips
   //when editing user, all videoclips will be pulled and displayed? Better not...keep it as a separate method
   //add videoclip button

@@ -9,7 +9,14 @@ class UsersRouter {
     //basic user methods
     router.get("/", this.controller.getAll.bind(this.controller));
     router.get("/:userId", this.controller.getOne.bind(this.controller));
+
+    router.get(
+      "/:userId/joinedChatrooms",
+      this.controller.getAllJoinedChatrooms.bind(this.controller)
+    );
+
     router.post("/", this.controller.postOne.bind(this.controller));
+<<<<<<< HEAD
     router.put("/:userId", this.controller.putOne.bind(this.controller))
     //user video clip methods
     router.get("/:userId/clips", this.controller.getAllClips.bind(this.controller));
@@ -25,6 +32,13 @@ class UsersRouter {
     router.post("/:userId/instruments/", this.controller.addPlayedInstrument.bind(this.controller));
     router.delete("/:userId/instruments/:instrumentId", this.controller.removePlayedInstrument.bind(this.controller));
     router.put("/:userId/instruments/:instrumentId", this.controller.editInstrumentExperience.bind(this.controller));
+=======
+    router.post(
+      "/postNewMessage",
+      this.controller.postMessageToChatroom.bind(this.controller)
+    );
+    router.put("/:userId", this.controller.putOne.bind(this.controller));
+>>>>>>> dev
     return router;
   }
 }
