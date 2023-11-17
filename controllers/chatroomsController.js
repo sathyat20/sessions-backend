@@ -45,6 +45,20 @@ class ChatroomsController extends BaseController {
       return res.status(400).json({ success: false, msg: err.message });
     }
   };
+
+  getAllChatroomAttachments = async (req, res) => {
+    const { chatId } = req.params;
+
+    try {
+      const chatroom = await this.model.findByPk(chatId);
+      // const allChatroomMessages = await chatroom.getUserChatroomMessages();
+      // const allAttachments = await allChatroomMessages.getAttachments();
+
+      return res.json({ success: true, data: allAttachments });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  };
 }
 
 module.exports = ChatroomsController;

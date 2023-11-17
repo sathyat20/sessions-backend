@@ -9,7 +9,8 @@ class UsersController extends BaseController {
     instrumentModel,
     userInstrumentModel,
     chatroomModel,
-    chatroomMessageModel
+    chatroomMessageModel,
+    attachmentModel
   ) {
     super(model);
     this.chatroomModel = chatroomModel;
@@ -19,6 +20,7 @@ class UsersController extends BaseController {
     this.genreModel = genreModel;
     this.instrumentModel = instrumentModel;
     this.userInstrumentModel = userInstrumentModel;
+    this.attachmentModel = attachmentModel;
   }
 
   async getOne(req, res) {
@@ -108,6 +110,26 @@ class UsersController extends BaseController {
       return res.status(400).json({ success: false, msg: err.message });
     }
   }
+
+  async postMessageAttachment(req, res) {
+    const { mediaURL, messageId } = req.body;
+
+    if (!mediaURL || !messageId) {
+      return res.status(400).json({ success: false, msg: "Input error!" });
+    }
+
+    try {
+      const newAttachment = await this.attachmentModel.create({
+        attachmentUrl: mediaURL,
+        messageId: messageId,
+        index: 1,
+      });
+      return res.json({ success: true, data: newAttachment });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
+
   //need method to add videoclip and change associated videoclips
   //when editing user, all videoclips will be pulled and displayed? Better not...keep it as a separate method
   //add videoclip button

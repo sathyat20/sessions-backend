@@ -29,6 +29,12 @@ class ChatroomsRouter {
       "/:chatId/getAllChatroomUsers",
       this.controller.getAllChatroomUsers
     );
+
+    router.get(
+      "/:chatId/getAllChatroomAttachments",
+      this.controller.getAllChatroomAttachments
+    );
+
     return router;
   };
 }
