@@ -44,6 +44,25 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        full_name: "Mrs Tubby",
+        profile_picture_url:
+          "https://firebasestorage.googleapis.com/v0/b/dev-portfolio-sq.appspot.com/o/musician_app_assets%2Fgoth_girl.jpg?alt=media&token=5c00ee55-e12a-4249-81fe-9a6985e31536",
+        bio: "ROCK AND ROLL",
+        experience: "かわいい",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        full_name: "Tough Guy ",
+        profile_picture_url:
+          "https://firebasestorage.googleapis.com/v0/b/dev-portfolio-sq.appspot.com/o/musician_app_assets%2Fladybeard.jpg?alt=media&token=1abf8b8e-0737-4137-932e-419d996a3f10",
+        bio: "I am a gentle soul who plays gentle music",
+        experience:
+          "I can sing and dance and play guitar, all at the same time",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ]);
   },
 

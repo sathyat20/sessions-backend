@@ -31,12 +31,7 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
-      {
-        user_id: 2,
-        chatroom_id: 1,
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
+
       {
         user_id: 2,
         chatroom_id: 2,
@@ -45,6 +40,20 @@ module.exports = {
       },
       {
         user_id: 3,
+        chatroom_id: 2,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+
+      {
+        user_id: 4,
+        chatroom_id: 1,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+
+      {
+        user_id: 5,
         chatroom_id: 1,
         created_at: new Date(),
         updated_at: new Date(),

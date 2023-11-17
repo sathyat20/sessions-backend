@@ -15,7 +15,7 @@ module.exports = {
     await queryInterface.bulkInsert("users_chatrooms_messages", [
       {
         author_id: 1,
-        chatroom_id: 1,
+        chatroom_id: 2,
         content: "What's you guys' favourite genre?",
         created_at: new Date(),
         updated_at: new Date(),
@@ -23,7 +23,7 @@ module.exports = {
 
       {
         author_id: 1,
-        chatroom_id: 1,
+        chatroom_id: 2,
         content: "I love jazz",
         created_at: new Date(),
         updated_at: new Date(),
@@ -31,7 +31,7 @@ module.exports = {
 
       {
         author_id: 2,
-        chatroom_id: 1,
+        chatroom_id: 2,
         content: "I love jazz too. Miles Davis is my favourite. How about you?",
         created_at: new Date(),
         updated_at: new Date(),
@@ -39,7 +39,7 @@ module.exports = {
 
       {
         author_id: 2,
-        chatroom_id: 1,
+        chatroom_id: 2,
         content:
           "But I also enjoy rock music, especially classic rock bands like Led Zeppelin and Van Halen",
         created_at: new Date(),
@@ -48,7 +48,7 @@ module.exports = {
 
       {
         author_id: 3,
-        chatroom_id: 1,
+        chatroom_id: 2,
         content:
           "Nice choices! Personally, I'm a fan of electronic music, particularly techno.",
         created_at: new Date(),
@@ -57,7 +57,7 @@ module.exports = {
 
       {
         author_id: 1,
-        chatroom_id: 1,
+        chatroom_id: 2,
         content: "Get out of my jam room",
         created_at: new Date(),
         updated_at: new Date(),
@@ -65,7 +65,7 @@ module.exports = {
 
       {
         author_id: 2,
-        chatroom_id: 1,
+        chatroom_id: 2,
         content:
           "I've been meaning to explore more techno. Any specific tracks you recommend?",
         created_at: new Date(),
@@ -74,7 +74,7 @@ module.exports = {
 
       {
         author_id: 3,
-        chatroom_id: 1,
+        chatroom_id: 2,
         content:
           "Sure thing! Check out 'Strobe' by Deadmau5 and 'Spaceman' by Hardwell.",
         created_at: new Date(),
@@ -83,7 +83,7 @@ module.exports = {
 
       {
         author_id: 1,
-        chatroom_id: 1,
+        chatroom_id: 2,
         content: "Thanks for the recommendations! I'll give it a shot",
         created_at: new Date(),
         updated_at: new Date(),
