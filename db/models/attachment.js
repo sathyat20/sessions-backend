@@ -6,6 +6,10 @@ module.exports = (sequelize, DataTypes) => {
       Attachment.belongsTo(models.userChatroomMessage, {
         foreignKey: "messageId",
       });
+
+      Attachment.belongsTo(models.chatroom, {
+        foreignKey: "chatroomId",
+      });
     }
   }
 
@@ -19,11 +23,23 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
       },
+      chatroomId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "chatroom",
+          key: "id",
+        },
+      },
       attachmentUrl: {
         type: DataTypes.TEXT,
         allowNull: false,
       },
       index: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      fileType: {
         type: DataTypes.STRING,
         allowNull: false,
       },

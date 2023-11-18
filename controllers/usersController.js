@@ -95,11 +95,7 @@ class UsersController extends BaseController {
       return res.status(400).json({ success: false, msg: "Input error!" });
     }
 
-    // console.log("testing");
-    // console.log(userId, chatroomId, content);
-
     try {
-      // console.log(this.chatroomMessageModel);
       const newChatroomMessage = await this.chatroomMessageModel.create({
         authorId: userId,
         chatroomId: chatroomId,
@@ -112,9 +108,9 @@ class UsersController extends BaseController {
   }
 
   async postMessageAttachment(req, res) {
-    const { mediaURL, messageId } = req.body;
+    const { mediaURL, messageId, chatroomId, fileType } = req.body;
 
-    if (!mediaURL || !messageId) {
+    if (!mediaURL || !messageId || !chatroomId || !`${fileType}`) {
       return res.status(400).json({ success: false, msg: "Input error!" });
     }
 
@@ -122,7 +118,9 @@ class UsersController extends BaseController {
       const newAttachment = await this.attachmentModel.create({
         attachmentUrl: mediaURL,
         messageId: messageId,
-        index: 1,
+        chatroomId: chatroomId,
+        fileType: `${fileType}`,
+        index: 1, // placeholder
       });
       return res.json({ success: true, data: newAttachment });
     } catch (err) {

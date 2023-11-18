@@ -21,8 +21,6 @@ class ChatroomsController extends BaseController {
 
   getAllChatroomMessages = async (req, res) => {
     const { chatId } = req.params;
-    // console.log(chatId);
-    // console.log(this.model);
     try {
       const chatroom = await this.model.findByPk(chatId);
       const allChatMessages = await chatroom.getUserChatroomMessages();
@@ -51,8 +49,7 @@ class ChatroomsController extends BaseController {
 
     try {
       const chatroom = await this.model.findByPk(chatId);
-      // const allChatroomMessages = await chatroom.getUserChatroomMessages();
-      // const allAttachments = await allChatroomMessages.getAttachments();
+      const allAttachments = await chatroom.getAttachments();
 
       return res.json({ success: true, data: allAttachments });
     } catch (err) {
