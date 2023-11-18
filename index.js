@@ -101,14 +101,25 @@ io.on("connection", (socket) => {
       )} from room ${chatroomId}`
     );
 
-    // Sending out the same message it received, to the other users in the chat
-    socket.broadcast.emit("receive-message", message); // send to all except self
-    // socket.to(chatroomId).emit("receive-message", message); // broadcast is assumed with the .to method
+    //// Sending out the same message it received, to the other users in the chat
+    // socket.broadcast.emit("receive-message", message); // send to all except self
+    socket.to(chatroomId).emit("receive-message", message); // broadcast is assumed with the .to method
   });
 
   // Receiving a user-typing from Client (i.e. when someone is typing in the chat box)
-  socket.on("user-typing", (userId) => {
-    socket.broadcast.emit("user-typing-response", userId);
+  socket.on("user-typing", (userId, chatroomId) => {
+    // console.log("typing, sending messsage to room: ", chatroomId, socketId);
+    // socket.broadcast.emit("user-typing-response", userId);
+    socket.to(chatroomId).emit("user-typing-response", userId);
+  });
+
+  socket.on("attachment-table-updated", (chatroomId) => {
+    // socket.broadcast.emit("refresh-attachments");
+    socket.to(chatroomId).emit("refresh-attachments");
+  });
+
+  socket.on("join-room", (room) => {
+    socket.join(room);
   });
 });
 
