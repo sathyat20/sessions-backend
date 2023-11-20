@@ -9,7 +9,8 @@ class UsersController extends BaseController {
     instrumentModel,
     userInstrumentModel,
     chatroomModel,
-    chatroomMessageModel
+    chatroomMessageModel,
+    attachmentModel
   ) {
     super(model);
     this.chatroomModel = chatroomModel;
@@ -19,6 +20,7 @@ class UsersController extends BaseController {
     this.genreModel = genreModel;
     this.instrumentModel = instrumentModel;
     this.userInstrumentModel = userInstrumentModel;
+    this.attachmentModel = attachmentModel;
   }
 
   async getOne(req, res) {
@@ -93,11 +95,7 @@ class UsersController extends BaseController {
       return res.status(400).json({ success: false, msg: "Input error!" });
     }
 
-    // console.log("testing");
-    // console.log(userId, chatroomId, content);
-
     try {
-      // console.log(this.chatroomMessageModel);
       const newChatroomMessage = await this.chatroomMessageModel.create({
         authorId: userId,
         chatroomId: chatroomId,
@@ -108,6 +106,28 @@ class UsersController extends BaseController {
       return res.status(400).json({ success: false, msg: err.message });
     }
   }
+
+  async postMessageAttachment(req, res) {
+    const { mediaURL, messageId, chatroomId, fileType } = req.body;
+
+    if (!mediaURL || !messageId || !chatroomId || !`${fileType}`) {
+      return res.status(400).json({ success: false, msg: "Input error!" });
+    }
+
+    try {
+      const newAttachment = await this.attachmentModel.create({
+        attachmentUrl: mediaURL,
+        messageId: messageId,
+        chatroomId: chatroomId,
+        fileType: `${fileType}`,
+        index: 1, // placeholder
+      });
+      return res.json({ success: true, data: newAttachment });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
+
   //need method to add videoclip and change associated videoclips
   //when editing user, all videoclips will be pulled and displayed? Better not...keep it as a separate method
   //add videoclip button

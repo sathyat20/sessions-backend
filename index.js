@@ -9,27 +9,46 @@ const PORT = process.env.PORT;
 // importing Routers
 const UsersRouter = require("./routers/usersRouter");
 const ChatroomRouter = require("./routers/chatroomsRouter");
-const ArtistsRouter = require('./routers/artistsRouter')
-const GenresRouter = require('./routers/genresRouter')
-const InstrumentsRouter = require('./routers/instrumentsRouter')
+const ArtistsRouter = require("./routers/artistsRouter");
+const GenresRouter = require("./routers/genresRouter");
+const InstrumentsRouter = require("./routers/instrumentsRouter");
 
 // importing Controllers
 const UsersController = require("./controllers/usersController");
 const ChatroomsController = require("./controllers/chatroomsController");
-const ArtistsController = require('./controllers/artistsController')
-const GenresController = require('./controllers/genresController')
-const InstrumentsController = require('./controllers/instrumentsController')
+const ArtistsController = require("./controllers/artistsController");
+const GenresController = require("./controllers/genresController");
+const InstrumentsController = require("./controllers/instrumentsController");
 
 // importing DB
 const db = require("./db/models/index"); //open up index.js in db/models
-const { user, chatroom, userChatroomMessage, personalVideoClip, genre, artist, instrument, userInstrument } = db; 
+const {
+  user,
+  chatroom,
+  userChatroomMessage,
+  personalVideoClip,
+  genre,
+  artist,
+  instrument,
+  userInstrument,
+  attachment,
+} = db;
 
 // initializing Controllers -> note the lowercase for the first word
-const usersController = new UsersController(user, personalVideoClip, artist, genre, instrument, userInstrument, chatroom,
-  userChatroomMessage)
-const artistsController = new ArtistsController(artist)
-const genresController = new GenresController(genre)
-const instrumentsController = new InstrumentsController(instrument)
+const usersController = new UsersController(
+  user,
+  personalVideoClip,
+  artist,
+  genre,
+  instrument,
+  userInstrument,
+  chatroom,
+  userChatroomMessage,
+  attachment
+);
+const artistsController = new ArtistsController(artist);
+const genresController = new GenresController(genre);
+const instrumentsController = new InstrumentsController(instrument);
 
 const chatroomsController = new ChatroomsController(
   chatroom,
@@ -40,9 +59,9 @@ const chatroomsController = new ChatroomsController(
 // initializing Routers
 const usersRouter = new UsersRouter(usersController).routes();
 const chatroomsRouter = new ChatroomRouter(chatroomsController).routes();
-const artistsRouter = new ArtistsRouter(artistsController).routes()
-const genresRouter = new GenresRouter(genresController).routes()
-const instrumentsRouter = new InstrumentsRouter(instrumentsController).routes()
+const artistsRouter = new ArtistsRouter(artistsController).routes();
+const genresRouter = new GenresRouter(genresController).routes();
+const instrumentsRouter = new InstrumentsRouter(instrumentsController).routes();
 
 // Enable CORS access to this server
 const corsOptions = {
@@ -56,9 +75,9 @@ app.use(express.urlencoded({ extended: true }));
 // using the routers
 app.use("/users", usersRouter);
 app.use("/chatrooms", chatroomsRouter);
-app.use('/artists', artistsRouter) 
-app.use('/genres', genresRouter) 
-app.use('/instruments', instrumentsRouter) 
+app.use("/artists", artistsRouter);
+app.use("/genres", genresRouter);
+app.use("/instruments", instrumentsRouter);
 
 //activate backend
 app.listen(PORT, () => {
@@ -82,14 +101,25 @@ io.on("connection", (socket) => {
       )} from room ${chatroomId}`
     );
 
-    // Sending out the same message it received, to the other users in the chat
-    socket.broadcast.emit("receive-message", message); // send to all except self
-    // socket.to(chatroomId).emit("receive-message", message); // broadcast is assumed with the .to method
+    //// Sending out the same message it received, to the other users in the chat
+    // socket.broadcast.emit("receive-message", message); // send to all except self
+    socket.to(chatroomId).emit("receive-message", message); // broadcast is assumed with the .to method
   });
 
   // Receiving a user-typing from Client (i.e. when someone is typing in the chat box)
-  socket.on("user-typing", (userId) => {
-    socket.broadcast.emit("user-typing-response", userId);
+  socket.on("user-typing", (userId, chatroomId) => {
+    // console.log("typing, sending messsage to room: ", chatroomId, socketId);
+    // socket.broadcast.emit("user-typing-response", userId);
+    socket.to(chatroomId).emit("user-typing-response", userId);
+  });
+
+  socket.on("attachment-table-updated", (chatroomId) => {
+    // socket.broadcast.emit("refresh-attachments");
+    socket.to(chatroomId).emit("refresh-attachments");
+  });
+
+  socket.on("join-room", (room) => {
+    socket.join(room);
   });
 });
 
