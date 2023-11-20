@@ -2,10 +2,26 @@ const express = require("express");
 const router = express.Router();
 
 class UsersRouter {
-  constructor(controller) {
+  constructor(controller, jwtAuth) {
     this.controller = controller;
+    this.jwtAuth = jwtAuth;
   }
+
   routes() {
+    // JWT Auth Sign Up/Sign In Functions
+    router.post("/jwtSignUp", this.controller.jwtSignUp.bind(this.controller));
+    router.post(
+      "/jwtLogIn",
+      this.controller.jwtLogInUser.bind(this.controller)
+    );
+
+    // JWT Auth Middleware
+    router.use(this.jwtAuth.bind(this.jwtAuth));
+
+    /**
+     *  Authorized-User Methods
+     * */
+
     //basic user methods
     router.get("/", this.controller.getAll.bind(this.controller));
     router.get("/:userId", this.controller.getOne.bind(this.controller));
@@ -18,6 +34,11 @@ class UsersRouter {
     router.post("/", this.controller.postOne.bind(this.controller));
     router.put("/:userId", this.controller.putOne.bind(this.controller));
 
+    router.post(
+      "/addProfilePicture",
+      this.controller.addProfilePicture.bind(this.controller)
+    );
+
     // Message Related Functions
     router.post(
       "/postMessageAttachment",
@@ -27,6 +48,11 @@ class UsersRouter {
     router.post(
       "/postNewMessage",
       this.controller.postMessageToChatroom.bind(this.controller)
+    );
+
+    router.post(
+      "/createNewChatroom",
+      this.controller.createChatroomForOneUser.bind(this.controller)
     );
 
     //user video clip methods
