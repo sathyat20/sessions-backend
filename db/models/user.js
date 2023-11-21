@@ -10,13 +10,13 @@ module.exports = (sequelize, DataTypes) => {
       User.belongsToMany(models.instrument, { through: models.userInstrument });
       User.hasMany(models.userInstrument);
 
-      // define association here as further models are added'
       User.belongsToMany(models.chatroom, { through: "users_chatrooms" });
     }
   }
   User.init(
     {
-      fullName: DataTypes.STRING,
+      fullName: { type: DataTypes.STRING, allowNull: false },
+      password: { type: DataTypes.TEXT, allowNull: false },
       profilePictureUrl: DataTypes.STRING,
       bio: DataTypes.TEXT,
       experience: DataTypes.TEXT,

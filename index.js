@@ -4,7 +4,8 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT;
 
-//to edit below later, is all copied from bigfoot
+// Import Auth Middleware
+const jwtAuth = require("./middlewares/jwtAuth");
 
 // importing Routers
 const UsersRouter = require("./routers/usersRouter");
@@ -57,8 +58,11 @@ const chatroomsController = new ChatroomsController(
 );
 
 // initializing Routers
-const usersRouter = new UsersRouter(usersController).routes();
-const chatroomsRouter = new ChatroomRouter(chatroomsController).routes();
+const usersRouter = new UsersRouter(usersController, jwtAuth).routes();
+const chatroomsRouter = new ChatroomRouter(
+  chatroomsController,
+  jwtAuth
+).routes();
 const artistsRouter = new ArtistsRouter(artistsController).routes();
 const genresRouter = new GenresRouter(genresController).routes();
 const instrumentsRouter = new InstrumentsRouter(instrumentsController).routes();
@@ -108,18 +112,22 @@ io.on("connection", (socket) => {
 
   // Receiving a user-typing from Client (i.e. when someone is typing in the chat box)
   socket.on("user-typing", (userId, chatroomId) => {
-    // console.log("typing, sending messsage to room: ", chatroomId, socketId);
-    // socket.broadcast.emit("user-typing-response", userId);
     socket.to(chatroomId).emit("user-typing-response", userId);
   });
 
   socket.on("attachment-table-updated", (chatroomId) => {
-    // socket.broadcast.emit("refresh-attachments");
-    socket.to(chatroomId).emit("refresh-attachments");
+    console.log("charoom id: ", chatroomId);
+    if (chatroomId) {
+      socket.to(chatroomId).emit("refresh-attachments");
+    }
   });
 
   socket.on("join-room", (room) => {
     socket.join(room);
+  });
+
+  socket.on("created-new-chatroom", () => {
+    socket.broadcast.emit("new-room-created");
   });
 });
 

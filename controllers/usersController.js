@@ -1,4 +1,7 @@
 const BaseController = require("./baseController");
+const bcrypt = require("bcrypt"); // hashing User inputs on Sign Up / Log In
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 class UsersController extends BaseController {
   constructor(
@@ -21,6 +24,152 @@ class UsersController extends BaseController {
     this.instrumentModel = instrumentModel;
     this.userInstrumentModel = userInstrumentModel;
     this.attachmentModel = attachmentModel;
+  }
+
+  /** Basic Auth */
+  async signUpUser(req, res) {
+    const { fullName, password } = req.body;
+
+    // Input Validation
+    if (!fullName || !password) {
+      return res
+        .status(400)
+        .json({ success: false, data: "Missing Basic Information" });
+    }
+
+    // Hash the Password so we don't save plaintext on client/don't send plain text over the internet
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    try {
+      const newUser = await this.model.create({
+        fullName: fullName,
+        password: hashedPassword,
+        profilePictureUrl: "",
+        bio: "",
+        experience: "",
+      });
+      return res.json({ success: true, data: newUser });
+    } catch (err) {
+      return res.status(400).json({ success: false, data: err.message });
+    }
+  }
+
+  async signInUser(req, res) {
+    const { fullName, password } = req.body;
+
+    if (!fullName || !password) {
+      return res
+        .status(400)
+        .json({ success: false, data: "Missing Basic Information" });
+    }
+
+    const user = await this.model.findOne({ where: { fullName: fullName } });
+
+    if (!user) {
+      return res.status(404).json({ success: false, data: err.message });
+    }
+
+    const compare = await bcrypt.compare(password, user.password);
+
+    if (!compare) {
+      return res
+        .status(403)
+        .json({ success: false, data: "Input password does not match " });
+    }
+
+    return res.json({
+      success: true,
+    });
+  }
+
+  /** JWT Auth */
+  async jwtSignUp(req, res) {
+    const { fullName, password } = req.body;
+
+    // Input Validation
+    if (!fullName || !password) {
+      return res
+        .status(400)
+        .json({ success: false, data: "Missing Basic Information" });
+    }
+
+    // Hash the Password so we don't save plaintext on client/don't send plain text over the internet
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    try {
+      const newUser = await this.model.create({
+        fullName: fullName,
+        password: hashedPassword,
+        profilePictureUrl: "",
+        bio: "",
+        experience: "",
+      });
+
+      // For JWT auth, we return a JWT rather than a JSON (in basic signin)
+      const payload = {
+        id: newUser.id,
+        fullName: newUser.fullName,
+      };
+
+      const token = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET_KEY, {
+        expiresIn: "5mins",
+      });
+      return res.json({ success: true, data: token });
+    } catch (err) {
+      return res.status(400).json({ success: false, data: err.message });
+    }
+  }
+
+  async jwtLogInUser(req, res) {
+    const { fullName, password } = req.body;
+
+    if (!fullName || !password) {
+      return res
+        .status(400)
+        .json({ success: false, data: "Missing Basic Information" });
+    }
+
+    const user = await this.model.findOne({
+      where: { fullName: fullName },
+    });
+
+    if (!user) {
+      return res.json({ success: false, msg: "User not found." });
+      // how to catch res.status(404).json ? It breaks my frontend.
+    }
+
+    const compare = await bcrypt.compare(password, user.password);
+
+    if (!compare) {
+      return res.json({
+        success: false,
+        data: "Input password does not match ",
+      });
+    }
+
+    // For JWT auth, the Payload (the return) is different from basic sign in.
+
+    const payload = {
+      id: user.id,
+      fullName: fullName,
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET_KEY, {
+      expiresIn: "60mins",
+    });
+
+    return res.json({ success: true, data: token });
+  }
+
+  /** User Methods */
+  async getCurrentUser(req, res) {
+    const userId = req.userId;
+    try {
+      const user = await this.model.findByPk(userId);
+      return res.json({ success: true, user });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
   }
 
   async getOne(req, res) {
@@ -78,20 +227,24 @@ class UsersController extends BaseController {
   }
 
   async getAllJoinedChatrooms(req, res) {
-    const { userId } = req.params;
+    // const { userId } = req.params;
+
+    const userId = req.userId;
+
     try {
       const user = await this.model.findByPk(userId);
       const allJoinedChatrooms = await user.getChatrooms();
       return res.json({ success: true, data: allJoinedChatrooms });
     } catch (err) {
-      return res.status(400).json({ success: false, msg: err.message });
+      return res.status(402).json({ success: false, msg: err.message });
     }
   }
 
   async postMessageToChatroom(req, res) {
-    const { userId, chatroomId, content } = req.body;
+    const { chatroomId, content } = req.body;
+    const userId = req.userId;
 
-    if (!userId || !chatroomId || !content) {
+    if (!chatroomId || !content) {
       return res.status(400).json({ success: false, msg: "Input error!" });
     }
 
@@ -102,6 +255,30 @@ class UsersController extends BaseController {
         content: content,
       });
       return res.json({ success: true, data: newChatroomMessage });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
+
+  async createChatroomForOneUser(req, res) {
+    const { userId, name, description, genresPlayed, instrumentsWanted } =
+      req.body;
+
+    if (!userId || !name) {
+      return res.json({ success: false, msg: "requires a room name" });
+    }
+
+    try {
+      const createdRoom = await this.chatroomModel.create({
+        name,
+        description,
+        genresPlayed,
+        instrumentsWanted,
+      });
+
+      const addUserToNewRoom = await createdRoom.addUser(userId);
+
+      return res.json({ success: true, data: addUserToNewRoom });
     } catch (err) {
       return res.status(400).json({ success: false, msg: err.message });
     }
@@ -132,6 +309,22 @@ class UsersController extends BaseController {
   //when editing user, all videoclips will be pulled and displayed? Better not...keep it as a separate method
   //add videoclip button
   //edit videoclip and delete buttons
+
+  async addProfilePicture(req, res) {
+    const { photoURL } = req.body;
+    let userId = req.userId; // from Middleware
+
+    try {
+      const addToUser = await this.model.findByPk(userId);
+      const addProfilePic = await addToUser.update({
+        profilePictureUrl: photoURL,
+      });
+
+      return res.json({ success: true, data: addProfilePic });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
 
   async getAllClips(req, res) {
     const { userId } = req.params;

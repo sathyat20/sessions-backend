@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 class ChatroomsRouter {
-  constructor(chatroomController) {
+  constructor(chatroomController, jwtAuth) {
     this.controller = chatroomController;
+    this.jwtAuth = jwtAuth;
   }
 
   // routes() {
@@ -15,6 +16,10 @@ class ChatroomsRouter {
   // }
 
   routes = () => {
+    // JWT Auth Middleware
+    router.use(this.jwtAuth);
+
+    // Authenticated-User Methods
     router.get(
       "/:chatId/getAllChatroomMessages",
       this.controller.getAllChatroomMessages
@@ -34,6 +39,8 @@ class ChatroomsRouter {
       "/:chatId/getAllChatroomAttachments",
       this.controller.getAllChatroomAttachments
     );
+
+    router.post("/addUserToChatroom", this.controller.addOneUserToChatroom);
 
     return router;
   };
