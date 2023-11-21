@@ -31,8 +31,10 @@ const {
   genre,
   artist,
   instrument,
-  userInstrument,
+  userInstrument, 
   attachment,
+  userArtist, 
+  userGenre,
 } = db;
 
 // initializing Controllers -> note the lowercase for the first word
@@ -47,9 +49,9 @@ const usersController = new UsersController(
   userChatroomMessage,
   attachment
 );
-const artistsController = new ArtistsController(artist);
-const genresController = new GenresController(genre);
-const instrumentsController = new InstrumentsController(instrument);
+const artistsController = new ArtistsController(artist, userArtist);
+const genresController = new GenresController(genre, userGenre);
+const instrumentsController = new InstrumentsController(instrument, userInstrument);
 
 const chatroomsController = new ChatroomsController(
   chatroom,

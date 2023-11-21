@@ -75,7 +75,7 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.dropTable('userchat');
+    await queryInterface.dropTable('users_jam_sessions');
     await queryInterface.dropTable('users_chatrooms_messages');
   }
 };

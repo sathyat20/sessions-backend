@@ -25,9 +25,10 @@ class UsersRouter {
     //basic user methods
     router.get("/", this.controller.getAll.bind(this.controller));
 
+    router.get("/filteredusers/:category/:option", this.controller.getFilteredUsers.bind(this.controller));
     router.get(
       "/getCurrentUser",
-      this.controller.getCurrentUser.bind(this.controller)
+      this.controller.getCurrentUserUser.bind(this.controller)
     );
 
     router.get(
@@ -37,8 +38,8 @@ class UsersRouter {
 
     router.get("/:userId", this.controller.getOne.bind(this.controller));
 
-    router.post("/", this.controller.postOne.bind(this.controller));
-    router.put("/:userId", this.controller.putOne.bind(this.controller));
+    router.post("/", this.controller.postOneUser.bind(this.controller));
+    router.put("/:userId", this.controller.putOneUser.bind(this.controller));
 
     router.post(
       "/addProfilePicture",
@@ -92,6 +93,30 @@ class UsersRouter {
       "/:userId/artists/:artistId",
       this.controller.removeArtistInterest.bind(this.controller)
     );
+    router.put(
+      "/:userId/artists/",
+      this.controller.assignArtists.bind(this.controller)
+    );
+
+    //user's genre interests methods
+    router.get(
+      "/:userId/genres",
+      this.controller.getGenres.bind(this.controller)
+    );
+    router.post(
+      "/:userId/genres/",
+      this.controller.addGenreInterest.bind(this.controller)
+    );
+    router.delete(
+      "/:userId/genres/:genreId",
+      this.controller.removeGenreInterest.bind(this.controller)
+    );
+    router.put(
+      "/:userId/genres/",
+      this.controller.assignGenres.bind(this.controller)
+    );
+    
+    
     //user's instruments methods
     router.get(
       "/:userId/instruments",
@@ -109,7 +134,12 @@ class UsersRouter {
       "/:userId/instruments/:instrumentId",
       this.controller.editInstrumentExperience.bind(this.controller)
     );
+    router.put(
+      "/:userId/instruments/",
+      this.controller.assignInstruments.bind(this.controller)
+    );
 
+ 
     return router;
   }
 }
