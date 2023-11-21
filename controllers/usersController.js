@@ -162,6 +162,16 @@ class UsersController extends BaseController {
   }
 
   /** User Methods */
+  async getCurrentUser(req, res) {
+    const userId = req.userId;
+    try {
+      const user = await this.model.findByPk(userId);
+      return res.json({ success: true, user });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
   async getOne(req, res) {
     const { userId } = req.params;
     try {
@@ -217,20 +227,24 @@ class UsersController extends BaseController {
   }
 
   async getAllJoinedChatrooms(req, res) {
-    const { userId } = req.params;
+    // const { userId } = req.params;
+
+    const userId = req.userId;
+
     try {
       const user = await this.model.findByPk(userId);
       const allJoinedChatrooms = await user.getChatrooms();
       return res.json({ success: true, data: allJoinedChatrooms });
     } catch (err) {
-      return res.status(400).json({ success: false, msg: err.message });
+      return res.status(402).json({ success: false, msg: err.message });
     }
   }
 
   async postMessageToChatroom(req, res) {
-    const { userId, chatroomId, content } = req.body;
+    const { chatroomId, content } = req.body;
+    const userId = req.userId;
 
-    if (!userId || !chatroomId || !content) {
+    if (!chatroomId || !content) {
       return res.status(400).json({ success: false, msg: "Input error!" });
     }
 

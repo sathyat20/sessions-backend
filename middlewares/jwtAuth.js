@@ -2,14 +2,14 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const jwtAuth = (req, res, next) => {
-  console.log("middleware testing");
-  console.log("header: ", req.headers.authorization);
-  const token = req.headers.authorization.split(" ")[1];
-  // const token = req.headers.authorization;
-  console.log("token:", token);
-  console.log("middleware token");
-
   try {
+    console.log("middleware testing");
+    console.log("header with auth: ", req.headers.authorization);
+    console.log("header: ", req.headers);
+    const token = req.headers.authorization.split(" ")[1];
+    // const token = req.headers.authorization;
+    console.log("middleware token:", token);
+
     const verifiedToken = jwt.verify(
       token,
       process.env.JWT_ACCESS_TOKEN_SECRET_KEY

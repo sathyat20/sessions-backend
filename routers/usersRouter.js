@@ -24,12 +24,18 @@ class UsersRouter {
 
     //basic user methods
     router.get("/", this.controller.getAll.bind(this.controller));
-    router.get("/:userId", this.controller.getOne.bind(this.controller));
 
     router.get(
-      "/:userId/joinedChatrooms",
+      "/getCurrentUser",
+      this.controller.getCurrentUser.bind(this.controller)
+    );
+
+    router.get(
+      "/joinedChatrooms",
       this.controller.getAllJoinedChatrooms.bind(this.controller)
     );
+
+    router.get("/:userId", this.controller.getOne.bind(this.controller));
 
     router.post("/", this.controller.postOne.bind(this.controller));
     router.put("/:userId", this.controller.putOne.bind(this.controller));

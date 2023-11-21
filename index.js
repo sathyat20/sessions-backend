@@ -112,18 +112,22 @@ io.on("connection", (socket) => {
 
   // Receiving a user-typing from Client (i.e. when someone is typing in the chat box)
   socket.on("user-typing", (userId, chatroomId) => {
-    // console.log("typing, sending messsage to room: ", chatroomId, socketId);
-    // socket.broadcast.emit("user-typing-response", userId);
     socket.to(chatroomId).emit("user-typing-response", userId);
   });
 
   socket.on("attachment-table-updated", (chatroomId) => {
-    // socket.broadcast.emit("refresh-attachments");
-    socket.to(chatroomId).emit("refresh-attachments");
+    console.log("charoom id: ", chatroomId);
+    if (chatroomId) {
+      socket.to(chatroomId).emit("refresh-attachments");
+    }
   });
 
   socket.on("join-room", (room) => {
     socket.join(room);
+  });
+
+  socket.on("created-new-chatroom", () => {
+    socket.broadcast.emit("new-room-created");
   });
 });
 

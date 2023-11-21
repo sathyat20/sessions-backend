@@ -59,7 +59,7 @@ module.exports = {
         updated_at: new Date(),
       },
       {
-        full_name: "Tough Guy ",
+        full_name: "Tough Guy",
         password: bcrypt.hashSync("hello5", 10),
         profile_picture_url:
           "https://firebasestorage.googleapis.com/v0/b/dev-portfolio-sq.appspot.com/o/musician_app_assets%2Fladybeard.jpg?alt=media&token=1abf8b8e-0737-4137-932e-419d996a3f10",
