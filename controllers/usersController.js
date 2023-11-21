@@ -95,7 +95,7 @@ class UsersController extends BaseController {
 
     // Hash the Password so we don't save plaintext on client/don't send plain text over the internet
     const hashedPassword = await bcrypt.hash(password, 10);
-
+    
     try {
       const newUser = await this.model.create({
         fullName: fullName,

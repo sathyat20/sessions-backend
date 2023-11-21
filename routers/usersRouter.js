@@ -28,7 +28,7 @@ class UsersRouter {
     router.get("/filteredusers/:category/:option", this.controller.getFilteredUsers.bind(this.controller));
     router.get(
       "/getCurrentUser",
-      this.controller.getCurrentUserUser.bind(this.controller)
+      this.controller.getCurrentUser.bind(this.controller)
     );
 
     router.get(
@@ -36,7 +36,7 @@ class UsersRouter {
       this.controller.getAllJoinedChatrooms.bind(this.controller)
     );
 
-    router.get("/:userId", this.controller.getOne.bind(this.controller));
+    router.get("/:userId", this.controller.getOneUser.bind(this.controller));
 
     router.post("/", this.controller.postOneUser.bind(this.controller));
     router.put("/:userId", this.controller.putOneUser.bind(this.controller));
