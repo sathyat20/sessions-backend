@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here as further models are added'
       this.hasMany(models.userChatroomMessage);
+      this.hasMany(models.attachment, { foreignKey: "chatroomId" });
       this.belongsToMany(models.user, { through: "users_chatrooms" });
     }
   }
