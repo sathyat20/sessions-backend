@@ -22,14 +22,14 @@ const InstrumentsController = require('./controllers/instrumentsController')
 
 // importing DB
 const db = require("./db/models/index"); //open up index.js in db/models
-const { user, chatroom, userChatroomMessage, personalVideoClip, genre, artist, instrument, userInstrument } = db; 
+const { user, chatroom, userChatroomMessage, personalVideoClip, genre, artist, instrument, userInstrument, userArtist, userGenre } = db; 
 
 // initializing Controllers -> note the lowercase for the first word
 const usersController = new UsersController(user, personalVideoClip, artist, genre, instrument, userInstrument, chatroom,
   userChatroomMessage)
-const artistsController = new ArtistsController(artist)
-const genresController = new GenresController(genre)
-const instrumentsController = new InstrumentsController(instrument)
+const artistsController = new ArtistsController(artist, userArtist)
+const genresController = new GenresController(genre, userGenre)
+const instrumentsController = new InstrumentsController(instrument, userInstrument)
 
 const chatroomsController = new ChatroomsController(
   chatroom,

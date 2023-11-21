@@ -21,7 +21,36 @@ class UsersController extends BaseController {
     this.userInstrumentModel = userInstrumentModel;
   }
 
-  async getOne(req, res) {
+
+  // Article.findAll({
+  //   include: ['comments'],
+  //   where: {
+  //     '$comments.id$': { [Op.eq]: null }
+  //   },
+  // });
+
+  async getFilteredUsers(req, res) {//filter by artists, instruments, genres
+    const { category, option } = req.params; //option is case sensitive!
+    const inputArray = [{
+      model:this.instrumentModel,
+      order:[['instrument','userInstrument','userInstrument.instrumentExperience', 'ASC']],
+    }]
+    if (category !== 'instruments') {
+      inputArray.push(category)
+    }
+    try {
+      const filteredUsers = await this.model.findAll({ 
+        //current issue: if category = instrument only 1 instrument is pulled. Also need to sort instruments by highest exp
+        include: inputArray,
+        where: { [`$${category}.name$`]: option }, 
+      });
+      return res.json({ success: true, filteredUsers });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async getOneUser(req, res) {
     const { userId } = req.params;
     try {
       const user = await this.model.findByPk(userId);
@@ -31,7 +60,7 @@ class UsersController extends BaseController {
     }
   }
 
-  async postOne(req, res) {
+  async postOneUser(req, res) {
     const { fullName } = req.body;
     if (!fullName) {
       res.status(400).json({ success: false, msg: "input error" });
@@ -49,7 +78,7 @@ class UsersController extends BaseController {
     }
   }
 
-  async putOne(req, res) {
+  async putOneUser(req, res) {
     const { userId } = req.params;
     const { fullName, profilePictureUrl, bio, experience } = req.body;
     if (!fullName && !profilePictureUrl && !bio && !experience) {
@@ -181,11 +210,8 @@ class UsersController extends BaseController {
       const artistInterests = await this.artistModel.findAll({
         where: { "$users.id$": userId },
         include: { model: this.model, attributes: [] },
+        attributes: ["name"],
       });
-      // const artistInterests = await this.model.findAll({
-      //   include: this.artistModel,
-      //   where: {id:userId}
-      // })
       return res.json({ success: true, artistInterests });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
@@ -199,9 +225,6 @@ class UsersController extends BaseController {
     try {
       const addingUser = await this.model.findByPk(userId); // is there a way to eager loading this?
       const newArtistInterest = await addingUser.addArtist(artistId);
-      // const newArtistInterest = await this.model.addArtist(artistId, {
-      //   where: {id:userId},
-      // })
       console.log("added");
       return res.json({ success: true, newArtistInterest });
     } catch (err) {
@@ -227,7 +250,7 @@ class UsersController extends BaseController {
         include: [
           {
             model: this.instrumentModel, //include instruments - this also pulls userInstrument data by default
-            attributes: ["name"], //we only want name from instrument model
+            attributes: ["id", "name"], //we only want name from instrument model
             through: {
               model: this.userInstrumentModel,
               attributes: ["instrumentExperience"], //specify we only want instrumentExperience from userInstrument models
@@ -248,10 +271,14 @@ class UsersController extends BaseController {
       const playedInstruments = [];
       playedInstrumentData[0].instruments.forEach((instrument) => {
         //converting into array containing instrument: experience
-        playedInstruments.push([
-          instrument.name,
-          instrument.userInstrument.instrumentExperience,
-        ]);
+        playedInstruments.push({
+          instrument:{
+            value:instrument.id,
+            label:instrument.name,
+          },
+          instrumentExperience: instrument.userInstrument.instrumentExperience,
+        }
+        );
       });
       return res.json({ success: true, playedInstruments });
     } catch (err) {
@@ -307,6 +334,126 @@ class UsersController extends BaseController {
       return res.status(400).json({ error: true, msg: err });
     }
   }
+
+  async getGenres(req, res) {
+    const { userId } = req.params;
+    try {
+      const genreInterests = await this.genreModel.findAll({
+        where: { "$users.id$": userId },
+        include: { model: this.model, attributes: [] },
+        attributes: ["name"],
+      });
+      return res.json({ success: true, genreInterests });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async addGenreInterest(req, res) {
+    const { userId } = req.params;
+    const { genreId } = req.body;
+    console.log("accessed method");
+    try {
+      const addingUser = await this.model.findByPk(userId); // is there a way to eager loading this?
+      const newGenreInterest = await addingUser.addGenre(genreId);
+      return res.json({ success: true, newGenreInterest });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async removeGenreInterest(req, res) {
+    const { userId, genreId } = req.params;
+    try {
+      const removingUser = await this.model.findByPk(userId); // is there a way to eager loading this? Not unless we want to call the joint model
+      await removingUser.removeGenre(genreId);
+      return res.json({ success: true });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async assignArtists(req, res) {
+    const { userId } = req.params;
+    const { artistsList} = req.body;  
+    try {
+      const listToSet = [];
+      const listToCreate = [];
+      const allArtists = await this.artistModel.findAll();//getAll and check input vs getAll results
+      const artistNamesToIds = {};
+      allArtists.forEach((artist) => {
+        artistNamesToIds[artist.name] = artist.id
+      })
+      artistsList.forEach((name) => {
+        if (name in artistNamesToIds) {
+          listToSet.push(artistNamesToIds[name])//for those in the getAll results, get their id
+        } else {
+          listToCreate.push({ name })
+        }
+      })
+      //for those not in getAll results, bulkCreate(need to return ids);
+      const createdArtists = await this.artistModel.bulkCreate(listToCreate, { returning: true }) 
+      console.log(createdArtists)
+      const createdIds = createdArtists.map((artist) => artist.dataValues.id)
+      //combine ids and setArtists
+      const finalArtistIds = listToSet.concat(createdIds)
+      const addingUser = await this.model.findByPk(userId);
+      const response = await addingUser.setArtists(finalArtistIds)
+      return res.json({ success: true, response });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async assignGenres(req, res) {
+    const { userId } = req.params;
+    const { genresList} = req.body;  
+    try {
+      const listToSet = [];
+      const listToCreate = [];
+      const allGenres = await this.genreModel.findAll();//getAll and check input vs getAll results
+      const genreNamesToIds = {};
+      allGenres.forEach((genre) => {
+        genreNamesToIds[genre.name] = genre.id
+      })
+      genresList.forEach((name) => {
+        if (name in genreNamesToIds) {
+          listToSet.push(genreNamesToIds[name])//for those in the getAll results, get their id
+        } else {
+          listToCreate.push({ name })
+        }
+      })
+      //for those not in getAll results, bulkCreate(need to return ids);
+      const createdGenres = await this.genreModel.bulkCreate(listToCreate, { returning: true }) 
+      console.log(createdGenres)
+      const createdIds = createdGenres.map((genre) => genre.dataValues.id)
+      //combine ids and setGenres
+      const finalGenreIds = listToSet.concat(createdIds)
+      const addingUser = await this.model.findByPk(userId);
+      const response = await addingUser.setGenres(finalGenreIds)
+      return res.json({ success: true, response });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async assignInstruments(req, res) {
+    const { userId } = req.params;
+    const { userInstrumentsList } = req.body; // array of {instrument: {value: instrumentId, label: instrumentName},instrumentExperience: ""}
+    const userInstrumentObjs = userInstrumentsList.map((entry)=>{
+      return {userId, instrumentId: entry.instrument.value, instrumentExperience: entry.instrumentExperience}
+    }) 
+    try {
+      await this.userInstrumentModel.destroy({
+        where: {userId},
+      });
+      const createdUserInstruments = await this.userInstrumentModel.bulkCreate(userInstrumentObjs, {returning: true})
+      return res.json({ success: true, createdUserInstruments });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  } 
 }
+
 
 module.exports = UsersController;
