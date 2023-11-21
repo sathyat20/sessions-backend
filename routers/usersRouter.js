@@ -62,6 +62,11 @@ class UsersRouter {
       this.controller.createChatroomForOneUser.bind(this.controller)
     );
 
+    router.post(
+      "/createNewChatroomForTwo",
+      this.controller.createChatroomForTwoUsers.bind(this.controller)
+    );
+
     //user video clip methods
     router.get(
       "/:userId/clips",
