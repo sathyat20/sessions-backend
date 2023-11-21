@@ -25,10 +25,13 @@ class UsersRouter {
     //basic user methods
     router.get("/", this.controller.getAll.bind(this.controller));
 
-    router.get("/filteredusers/:category/:option", this.controller.getFilteredUsers.bind(this.controller));
+    router.get(
+      "/filteredusers/:category/:option",
+      this.controller.getFilteredUsers.bind(this.controller)
+    );
     router.get(
       "/getCurrentUser",
-      this.controller.getCurrentUserUser.bind(this.controller)
+      this.controller.getCurrentUser.bind(this.controller)
     );
 
     router.get(
@@ -36,7 +39,7 @@ class UsersRouter {
       this.controller.getAllJoinedChatrooms.bind(this.controller)
     );
 
-    router.get("/:userId", this.controller.getOne.bind(this.controller));
+    router.get("/:userId", this.controller.getOneUser.bind(this.controller));
 
     router.post("/", this.controller.postOneUser.bind(this.controller));
     router.put("/:userId", this.controller.putOneUser.bind(this.controller));
@@ -115,8 +118,7 @@ class UsersRouter {
       "/:userId/genres/",
       this.controller.assignGenres.bind(this.controller)
     );
-    
-    
+
     //user's instruments methods
     router.get(
       "/:userId/instruments",
@@ -139,7 +141,6 @@ class UsersRouter {
       this.controller.assignInstruments.bind(this.controller)
     );
 
- 
     return router;
   }
 }
