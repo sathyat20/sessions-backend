@@ -95,7 +95,7 @@ class UsersController extends BaseController {
 
     // Hash the Password so we don't save plaintext on client/don't send plain text over the internet
     const hashedPassword = await bcrypt.hash(password, 10);
-
+    
     try {
       const newUser = await this.model.create({
         fullName: fullName,
@@ -308,6 +308,32 @@ class UsersController extends BaseController {
       const addUserToNewRoom = await createdRoom.addUser(userId);
 
       return res.json({ success: true, data: addUserToNewRoom });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
+
+  async createChatroomForTwoUsers(req, res) {
+    const {secondUserId,name, description, genresPlayed, instrumentsWanted } =
+      req.body;
+    const userId= req.userId
+
+    if (!userId || !name) {
+      return res.json({ success: false, msg: "requires a room name" });
+    }
+
+    try {
+      const createdRoom = await this.chatroomModel.create({
+        name,
+        description,
+        genresPlayed,
+        instrumentsWanted,
+      });
+
+      const addUserToNewRoom = await createdRoom.addUser(userId);
+      const addNextUserToNewRoom = await createdRoom.addUser(secondUserId);
+
+      return res.json({ success: true, data: [addUserToNewRoom, addNextUserToNewRoom]});
     } catch (err) {
       return res.status(400).json({ success: false, msg: err.message });
     }
