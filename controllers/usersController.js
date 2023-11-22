@@ -184,7 +184,11 @@ class UsersController extends BaseController {
     const { category, option } = req.params; //option is case sensitive!
     const inputArray = [{
       model:this.instrumentModel,
-      order:[['instrument','userInstrument','userInstrument.instrumentExperience', 'ASC']],
+      // order:[['instrument','userInstrument','userInstrument.instrumentExperience', 'ASC']],
+      // order:[
+      //   {model:this.instrumentModel}, 'id', 'DESC',
+      //   //[{model:this.userInstrumentModel}, 'instrumentExperience', 'ASC']
+      // ],
     }]
     if (category !== 'instruments') {
       inputArray.push(category)
@@ -194,6 +198,7 @@ class UsersController extends BaseController {
         //current issue: if category = instrument only 1 instrument is pulled. Also need to sort instruments by highest exp
         include: inputArray,
         where: { [`$${category}.name$`]: option }, 
+        order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'instrumentExperience', 'DESC']]
       });
       return res.json({ success: true, filteredUsers });
     } catch (err) {
@@ -232,9 +237,10 @@ class UsersController extends BaseController {
   async putOneUser(req, res) {
     const { userId } = req.params;
     const { fullName, profilePictureUrl, bio, experience } = req.body;
-    if (!fullName && !profilePictureUrl && !bio && !experience) {
-      res.status(400).json({ success: false, msg: "input error" });
-    }
+    console.log(req.body)
+    // if (!fullName && !profilePictureUrl && !bio && !experience) {
+    //   res.status(400).json({ success: false, msg: "input error" });
+    // }
     try {
       const editedUser = await this.model.update(
         // updateObject,
@@ -314,17 +320,19 @@ class UsersController extends BaseController {
   }
 
   async createChatroomForTwoUsers(req, res) {
-    const {secondUserId,name, description, genresPlayed, instrumentsWanted } =
+    const {secondUserId, secondUserFullName, description, genresPlayed, instrumentsWanted } =
       req.body;
     const userId= req.userId
 
-    if (!userId || !name) {
-      return res.json({ success: false, msg: "requires a room name" });
-    }
+    // if (!userId || !name) {
+    //   return res.json({ success: false, msg: "requires a room name" });
+    // }
 
     try {
+      const firstUser = await this.model.findByPk(userId)
+      console.log(firstUser.fullName)
       const createdRoom = await this.chatroomModel.create({
-        name,
+        name: firstUser.fullName + ' & ' + secondUserFullName,
         description,
         genresPlayed,
         instrumentsWanted,
