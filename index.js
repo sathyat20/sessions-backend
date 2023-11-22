@@ -132,6 +132,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("created-new-chatroom", () => {
+    console.log("created TRIGGERED");
+    console.log("triggered");
     socket.broadcast.emit("new-room-created");
   });
 
@@ -140,7 +142,9 @@ io.on("connection", (socket) => {
     console.log("YAY, second: ", seconduserId);
   });
 
-  socket.on("invited-one-user", (invitedUserId) => {
+  socket.on("invited-one-user", (invitedUserId, chatroomId) => {
+    console.log("INVITED TRIGGERED");
+    console.log("triggered ", invitedUserId);
     socket.broadcast.emit("you-have-been-invited", invitedUserId);
   });
 });
