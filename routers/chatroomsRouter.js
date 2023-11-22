@@ -41,7 +41,7 @@ class ChatroomsRouter {
     );
 
     router.post("/addUserToChatroom", this.controller.addOneUserToChatroom);
-
+    router.put("/:chatId", this.controller.updateChatroomDetails);
     return router;
   };
 }

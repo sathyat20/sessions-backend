@@ -74,6 +74,32 @@ class ChatroomsController extends BaseController {
       return res.status(402).json({ success: false, msg: err.message });
     }
   };
+
+  updateChatroomDetails = async (req, res) => {
+    const { chatId } = req.params;
+    const { name, description, genresPlayed, instrumentsWanted } = req.body;
+
+    try {
+      const chatroom = await this.model.findByPk(chatId);
+      const editedRoom = await this.model.update(
+        // updateObject,
+        {
+          name,
+          description,
+          genresPlayed,
+          instrumentsWanted,
+        },
+        {
+          where: { id: chatId },
+          returning: true,
+        }
+      );
+
+      return res.json({ success: true, data: editedRoom });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  };
 }
 
 module.exports = ChatroomsController;
