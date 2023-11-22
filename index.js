@@ -89,12 +89,12 @@ app.use("/genres", genresRouter);
 app.use("/instruments", instrumentsRouter);
 
 //activate backend
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Express app listening on port ${PORT}!`);
 });
 
 /** SOCKETS CODE */
-const io = require("socket.io")(8080, {
+const io = require("socket.io")(server, {
   cors: { origin: ["http://localhost:3000"] },
 }); // require is a function. so the two brackets.
 
