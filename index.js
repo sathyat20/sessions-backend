@@ -31,9 +31,9 @@ const {
   genre,
   artist,
   instrument,
-  userInstrument, 
+  userInstrument,
   attachment,
-  userArtist, 
+  userArtist,
   userGenre,
 } = db;
 
@@ -51,7 +51,10 @@ const usersController = new UsersController(
 );
 const artistsController = new ArtistsController(artist, userArtist);
 const genresController = new GenresController(genre, userGenre);
-const instrumentsController = new InstrumentsController(instrument, userInstrument);
+const instrumentsController = new InstrumentsController(
+  instrument,
+  userInstrument
+);
 
 const chatroomsController = new ChatroomsController(
   chatroom,
@@ -130,6 +133,15 @@ io.on("connection", (socket) => {
 
   socket.on("created-new-chatroom", () => {
     socket.broadcast.emit("new-room-created");
+  });
+
+  socket.on("create-room-for-two", (seconduserId) => {
+    socket.broadcast.emit("room-created-for-two", seconduserId);
+    console.log("YAY, second: ", seconduserId);
+  });
+
+  socket.on("invited-one-user", (invitedUserId) => {
+    socket.broadcast.emit("you-have-been-invited", invitedUserId);
   });
 });
 
