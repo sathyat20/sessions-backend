@@ -184,18 +184,12 @@ class UsersController extends BaseController {
     const { category, option } = req.params; //option is case sensitive!
     const inputArray = [{
       model:this.instrumentModel,
-      // order:[['instrument','userInstrument','userInstrument.instrumentExperience', 'ASC']],
-      // order:[
-      //   {model:this.instrumentModel}, 'id', 'DESC',
-      //   //[{model:this.userInstrumentModel}, 'instrumentExperience', 'ASC']
-      // ],
     }]
     if (category !== 'instruments') {
       inputArray.push(category)
     }
     try {
       const filteredUsers = await this.model.findAll({ 
-        //current issue: if category = instrument only 1 instrument is pulled. Also need to sort instruments by highest exp
         include: inputArray,
         where: { [`$${category}.name$`]: option }, 
         order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'instrumentExperience', 'DESC']]
@@ -320,7 +314,7 @@ class UsersController extends BaseController {
   }
 
   async createChatroomForTwoUsers(req, res) {
-    const {secondUserId, secondUserFullName, description, genresPlayed, instrumentsWanted } =
+    const {secondUserId, name, description, genresPlayed, instrumentsWanted } =
       req.body;
     const userId= req.userId
 
@@ -332,7 +326,7 @@ class UsersController extends BaseController {
       const firstUser = await this.model.findByPk(userId)
       console.log(firstUser.fullName)
       const createdRoom = await this.chatroomModel.create({
-        name: firstUser.fullName + ' & ' + secondUserFullName,
+        name,
         description,
         genresPlayed,
         instrumentsWanted,
