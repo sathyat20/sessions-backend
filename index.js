@@ -89,12 +89,12 @@ app.use("/genres", genresRouter);
 app.use("/instruments", instrumentsRouter);
 
 //activate backend
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Express app listening on port ${PORT}!`);
 });
 
 /** SOCKETS CODE */
-const io = require("socket.io")(8080, {
+const io = require("socket.io")(server, {
   cors: { origin: ["http://localhost:3000"] },
 }); // require is a function. so the two brackets.
 
@@ -132,6 +132,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("created-new-chatroom", () => {
+    console.log("created TRIGGERED");
+    console.log("triggered");
     socket.broadcast.emit("new-room-created");
   });
 
@@ -140,7 +142,9 @@ io.on("connection", (socket) => {
     console.log("YAY, second: ", seconduserId);
   });
 
-  socket.on("invited-one-user", (invitedUserId) => {
+  socket.on("invited-one-user", (invitedUserId, chatroomId) => {
+    console.log("INVITED TRIGGERED");
+    console.log("triggered ", invitedUserId);
     socket.broadcast.emit("you-have-been-invited", invitedUserId);
   });
 });
