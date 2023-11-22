@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     await Promise.all([
-      queryInterface.createTable('users', {
+      queryInterface.createTable("users", {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -12,8 +12,12 @@ module.exports = {
           type: Sequelize.INTEGER,
         },
         full_name: {
-          allowNull:false,
+          allowNull: false,
           type: Sequelize.STRING,
+        },
+        password: {
+          allowNull: false,
+          type: Sequelize.TEXT,
         },
         profile_picture_url: {
           type: Sequelize.STRING,
@@ -34,7 +38,7 @@ module.exports = {
         },
       }),
 
-      queryInterface.createTable('instruments', {
+      queryInterface.createTable("instruments", {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -42,7 +46,7 @@ module.exports = {
           type: Sequelize.INTEGER,
         },
         name: {
-          allowNull:false,
+          allowNull: false,
           type: Sequelize.STRING,
         },
         created_at: {
@@ -55,7 +59,7 @@ module.exports = {
         },
       }),
 
-      queryInterface.createTable('artists', {
+      queryInterface.createTable("artists", {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -63,7 +67,7 @@ module.exports = {
           type: Sequelize.INTEGER,
         },
         name: {
-          allowNull:false,
+          allowNull: false,
           type: Sequelize.STRING,
         },
         created_at: {
@@ -76,7 +80,7 @@ module.exports = {
         },
       }),
 
-      queryInterface.createTable('genres', {
+      queryInterface.createTable("genres", {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -84,7 +88,7 @@ module.exports = {
           type: Sequelize.INTEGER,
         },
         name: {
-          allowNull:false,
+          allowNull: false,
           type: Sequelize.STRING,
         },
         created_at: {
@@ -97,7 +101,7 @@ module.exports = {
         },
       }),
 
-      queryInterface.createTable('songs', {
+      queryInterface.createTable("songs", {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -105,7 +109,7 @@ module.exports = {
           type: Sequelize.INTEGER,
         },
         name: {
-          allowNull:false,
+          allowNull: false,
           type: Sequelize.STRING,
         },
         created_at: {
@@ -118,7 +122,7 @@ module.exports = {
         },
       }),
 
-      queryInterface.createTable('chatrooms', {
+      queryInterface.createTable("chatrooms", {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -126,7 +130,7 @@ module.exports = {
           type: Sequelize.INTEGER,
         },
         name: {
-          allowNull:false,
+          allowNull: false,
           type: Sequelize.STRING,
         },
         created_at: {
@@ -137,18 +141,18 @@ module.exports = {
           allowNull: false,
           type: Sequelize.DATE,
         },
-      })
-    ])
+      }),
+    ]);
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     await Promise.all([
-      queryInterface.dropTable('users'),
-      queryInterface.dropTable('instruments'),
-      queryInterface.dropTable('artists'),
-      queryInterface.dropTable('genres'),
-      queryInterface.dropTable('songs'),
-      queryInterface.dropTable('chatrooms'),
-    ])
-  }
+      queryInterface.dropTable("users"),
+      queryInterface.dropTable("instruments"),
+      queryInterface.dropTable("artists"),
+      queryInterface.dropTable("genres"),
+      queryInterface.dropTable("songs"),
+      queryInterface.dropTable("chatrooms"),
+    ]);
+  },
 };
