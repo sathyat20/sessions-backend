@@ -18,6 +18,7 @@ module.exports = {
         description:
           "We accept anyone to come to join us for jams! Except taylor swift fans",
         genres_played: "djent",
+        instruments_wanted: "Electric Guitar, Bassist",
         created_at: new Date(),
         updated_at: new Date(),
       },
@@ -26,6 +27,7 @@ module.exports = {
         description:
           "chill instrumental jam sessions, anything goes. We're also looking for a producer to help record and mix songs!",
         genres_played: "Lo-Fi, Chillhop, Instrumentals",
+        instruments_wanted: "Saxophone",
         created_at: new Date(),
         updated_at: new Date(),
       },
