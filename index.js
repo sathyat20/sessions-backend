@@ -74,10 +74,10 @@ const instrumentsRouter = new InstrumentsRouter(instrumentsController).routes();
 
 // Enable CORS access to this server
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: ["http://localhost:3000",'https://main--sessions-music.netlify.app'],
   optionsSuccessStatus: 200,
 };
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -95,8 +95,9 @@ const server = app.listen(PORT, () => {
 
 /** SOCKETS CODE */
 const io = require("socket.io")(server, {
-  cors: { origin: ["http://localhost:3000"] },
+  cors: { origin: true, methods:['GET', 'PUT', 'POST', 'DELETE'], credentials:true},
 }); // require is a function. so the two brackets.
+
 
 // a function that runs everytime a client connects to the server.
 io.on("connection", (socket) => {
