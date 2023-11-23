@@ -634,9 +634,7 @@ class UsersController extends BaseController {
       })
       //for those not in getAll results, bulkCreate(need to return ids);
       const createdArtists = await this.artistModel.bulkCreate(listToCreate, { returning: true }) 
-      console.log(createdArtists)
       const createdIds = createdArtists.map((artist) => artist.dataValues.id)
-      //combine ids and setArtists
       const finalArtistIds = listToSet.concat(createdIds)
       const addingUser = await this.model.findByPk(userId);
       const response = await addingUser.setArtists(finalArtistIds)
