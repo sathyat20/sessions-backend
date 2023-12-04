@@ -13,6 +13,7 @@ const ChatroomRouter = require("./routers/chatroomsRouter");
 const ArtistsRouter = require("./routers/artistsRouter");
 const GenresRouter = require("./routers/genresRouter");
 const InstrumentsRouter = require("./routers/instrumentsRouter");
+const ConnectionsRouter = require("./routers/connectionsRouter")
 
 // importing Controllers
 const UsersController = require("./controllers/usersController");
@@ -20,6 +21,7 @@ const ChatroomsController = require("./controllers/chatroomsController");
 const ArtistsController = require("./controllers/artistsController");
 const GenresController = require("./controllers/genresController");
 const InstrumentsController = require("./controllers/instrumentsController");
+const ConnectionsController = require("./controllers/connectionsController");
 
 // importing DB
 const db = require("./db/models/index"); //open up index.js in db/models
@@ -27,7 +29,7 @@ const {
   user,
   chatroom,
   userChatroomMessage,
-  personalVideoClip,
+  videoClip,
   genre,
   artist,
   instrument,
@@ -35,12 +37,13 @@ const {
   attachment,
   userArtist,
   userGenre,
+  connection
 } = db;
 
 // initializing Controllers -> note the lowercase for the first word
 const usersController = new UsersController(
   user,
-  personalVideoClip,
+  videoClip,
   artist,
   genre,
   instrument,
@@ -62,6 +65,11 @@ const chatroomsController = new ChatroomsController(
   userChatroomMessage
 );
 
+const connectionsController = new ConnectionsController(
+  connection,
+  user,
+);
+
 // initializing Routers
 const usersRouter = new UsersRouter(usersController, jwtAuth).routes();
 const chatroomsRouter = new ChatroomRouter(
@@ -71,6 +79,7 @@ const chatroomsRouter = new ChatroomRouter(
 const artistsRouter = new ArtistsRouter(artistsController).routes();
 const genresRouter = new GenresRouter(genresController).routes();
 const instrumentsRouter = new InstrumentsRouter(instrumentsController).routes();
+const connectionsRouter = new ConnectionsRouter(connectionsController).routes();
 
 // Enable CORS access to this server
 const corsOptions = {
@@ -87,6 +96,7 @@ app.use("/chatrooms", chatroomsRouter);
 app.use("/artists", artistsRouter);
 app.use("/genres", genresRouter);
 app.use("/instruments", instrumentsRouter);
+app.use("/connections", connectionsRouter);
 
 //activate backend
 const server = app.listen(PORT, () => {

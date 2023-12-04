@@ -9,9 +9,6 @@ module.exports = (sequelize, DataTypes) => {
   }
     UserInstrument.init(
         {
-            instrumentExperience: {
-                type:DataTypes.FLOAT,
-            },
             userId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
@@ -28,6 +25,12 @@ module.exports = (sequelize, DataTypes) => {
                     key: 'id',
                 }
             },
+            highestQualification: {
+                type: DataTypes.STRING,
+              },
+            qualificationInstitution: {
+                type: DataTypes.STRING,
+              },
         },
         {
             sequelize,

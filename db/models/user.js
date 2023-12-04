@@ -4,12 +4,12 @@ module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       // define association here as further models are added
-      User.hasMany(models.personalVideoClip);
+      User.hasMany(models.videoClip);
       User.belongsToMany(models.artist, { through: "users_artists" });
       User.belongsToMany(models.genre, { through: "users_genres" });
       User.belongsToMany(models.instrument, { through: models.userInstrument });
+      User.belongsToMany(models.user, { through: models.connection })
       User.hasMany(models.userInstrument);
-
       User.belongsToMany(models.chatroom, { through: "users_chatrooms" });
     }
   }
@@ -19,7 +19,9 @@ module.exports = (sequelize, DataTypes) => {
       password: { type: DataTypes.TEXT, allowNull: false },
       profilePictureUrl: DataTypes.STRING,
       bio: DataTypes.TEXT,
-      experience: DataTypes.TEXT,
+      experience: DataTypes.INTEGER,
+      careerStatus: DataTypes.STRING,
+      email: DataTypes.STRING,
     },
     {
       sequelize,

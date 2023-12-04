@@ -6,7 +6,7 @@ require("dotenv").config();
 class UsersController extends BaseController {
   constructor(
     model,
-    personalVideoClipModel,
+    videoClipModel,
     artistModel,
     genreModel,
     instrumentModel,
@@ -18,7 +18,7 @@ class UsersController extends BaseController {
     super(model);
     this.chatroomModel = chatroomModel;
     this.chatroomMessageModel = chatroomMessageModel;
-    this.personalVideoClipModel = personalVideoClipModel;
+    this.videoClipModel = videoClipModel;
     this.artistModel = artistModel;
     this.genreModel = genreModel;
     this.instrumentModel = instrumentModel;
@@ -171,14 +171,6 @@ class UsersController extends BaseController {
       return res.status(400).json({ error: true, msg: err });
     }
   }
-
-
-  // Article.findAll({
-  //   include: ['comments'],
-  //   where: {
-  //     '$comments.id$': { [Op.eq]: null }
-  //   },
-  // });
 
   async getFilteredUsers(req, res) {//filter by artists, instruments, genres
     const { category, option } = req.params; //option is case sensitive!
@@ -385,8 +377,9 @@ class UsersController extends BaseController {
 
   async getAllClips(req, res) {
     const { userId } = req.params;
+    console.log('we got here')
     try {
-      const comments = await this.personalVideoClipModel.findAll({
+      const output = await this.videoClipModel.findAll({
         where: { userId },
         order: ["createdAt"],
       });
@@ -400,7 +393,7 @@ class UsersController extends BaseController {
     const { userId } = req.params;
     const { hostUrl } = req.body;
     try {
-      const newClip = await this.model.createPersonalVideoClip(
+      const newClip = await this.model.createvideoClip(
         { hostUrl },
         { where: { id: userId } }
       );
@@ -414,7 +407,7 @@ class UsersController extends BaseController {
     const { userId, clipId } = req.params;
     const { hostUrl } = req.body;
     try {
-      const editedClip = await this.personalVideoClipModel.update(
+      const editedClip = await this.videoClipModel.update(
         { hostUrl },
         {
           where: {
@@ -433,7 +426,7 @@ class UsersController extends BaseController {
   async deleteClip(req, res) {
     const { userId, clipId } = req.params;
     try {
-      await this.personalVideoClipModel.destroy({
+      await this.videoClipModel.destroy({
         where: {
           userId,
           id: clipId,
@@ -494,7 +487,7 @@ class UsersController extends BaseController {
             attributes: ["id", "name"], //we only want name from instrument model
             through: {
               model: this.userInstrumentModel,
-              attributes: ["instrumentExperience"], //specify we only want instrumentExperience from userInstrument models
+              attributes: ["highestQualification", "qualificationInstitution"], //specify we only want instrumentExperience from userInstrument models
             },
           },
         ],
@@ -502,7 +495,7 @@ class UsersController extends BaseController {
           [
             this.instrumentModel,
             this.userInstrumentModel,
-            "instrumentExperience",
+            "id",
             "DESC",
           ],
         ], // sort instruments in descending order by instrumentExp col of userInstrument model nested in Instrument model
@@ -510,14 +503,17 @@ class UsersController extends BaseController {
         attributes: [], // we don't want any info from user model
       });
       const playedInstruments = [];
+      //console.log(playedInstrumentData)
       playedInstrumentData[0].instruments.forEach((instrument) => {
         //converting into array containing instrument: experience
+        console.log(instrument.userInstrument)
         playedInstruments.push({
           instrument:{
             value:instrument.id,
             label:instrument.name,
           },
-          instrumentExperience: instrument.userInstrument.instrumentExperience,
+          highestQualification: instrument.userInstrument.highestQualification,
+          qualificationInstitution: instrument.userInstrument.qualificationInstitution,
         }
         );
       });

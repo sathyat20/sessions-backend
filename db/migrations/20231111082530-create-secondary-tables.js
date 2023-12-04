@@ -159,8 +159,11 @@ module.exports = {
             key:'id',
           }
         },
-        instrument_experience: {
-          type: Sequelize.FLOAT,
+        highest_qualification: {
+          type: Sequelize.STRING,
+        },
+        qualification_institution: {
+          type: Sequelize.STRING,
         },
         created_at: {
           allowNull: false,
@@ -172,7 +175,7 @@ module.exports = {
         },
       }),
 
-      queryInterface.createTable('personal_video_clips', {
+      queryInterface.createTable('video_clips', {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -233,8 +236,47 @@ module.exports = {
           type: Sequelize.DATE,
         },
       }),
+
+      queryInterface.createTable('connections', {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: Sequelize.INTEGER,
+        },
+        requester_id: {
+          allowNull: false,
+          type: Sequelize.INTEGER,
+          references: {
+            model:'users',
+            key:'id',
+          }
+        },
+        requested_id: {
+          allowNull: false,
+          type: Sequelize.INTEGER,
+          references: {
+            model:'users',
+            key:'id',
+          }
+        },
+        status: {
+          allowNull: false,
+          type: Sequelize.STRING,
+        },
+        created_at: {
+          allowNull: false,
+          type: Sequelize.DATE,
+        },
+        updated_at: {
+          allowNull: false,
+          type: Sequelize.DATE,
+        },
+      }),
     ])
   },
+
+  
 
   async down (queryInterface, Sequelize) {
     await Promise.all([
@@ -243,8 +285,9 @@ module.exports = {
       queryInterface.dropTable('users_songs'),
       queryInterface.dropTable('users_chatrooms'),
       queryInterface.dropTable('users_instruments'),
-      queryInterface.dropTable('personal_video_clips'),
+      queryInterface.dropTable('video_clips'),
       queryInterface.dropTable('jam_sessions'),
+      queryInterface.dropTable('connections'),
     ])
   }
 };

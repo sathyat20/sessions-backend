@@ -26,7 +26,13 @@ module.exports = {
           type: Sequelize.TEXT,
         },
         experience: {
-          type: Sequelize.TEXT,
+          type: Sequelize.INTEGER,
+        },
+        career_status: {
+          type: Sequelize.STRING,
+        },
+        email: {
+          type: Sequelize.STRING,
         },
         created_at: {
           allowNull: false,
