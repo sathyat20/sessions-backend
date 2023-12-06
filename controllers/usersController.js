@@ -354,10 +354,6 @@ class UsersController extends BaseController {
     }
   }
 
-  //need method to add videoclip and change associated videoclips
-  //when editing user, all videoclips will be pulled and displayed? Better not...keep it as a separate method
-  //add videoclip button
-  //edit videoclip and delete buttons
 
   async addProfilePicture(req, res) {
     const { photoURL } = req.body;
@@ -377,7 +373,6 @@ class UsersController extends BaseController {
 
   async getAllClips(req, res) {
     const { userId } = req.params;
-    console.log('we got here')
     try {
       const output = await this.videoClipModel.findAll({
         where: { userId },
@@ -512,7 +507,10 @@ class UsersController extends BaseController {
             value:instrument.id,
             label:instrument.name,
           },
-          highestQualification: instrument.userInstrument.highestQualification,
+          highestQualification: {
+            value: instrument.userInstrument.highestQualification, 
+            label: instrument.userInstrument.highestQualification
+          },
           qualificationInstitution: instrument.userInstrument.qualificationInstitution,
         }
         );

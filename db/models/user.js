@@ -8,7 +8,8 @@ module.exports = (sequelize, DataTypes) => {
       User.belongsToMany(models.artist, { through: "users_artists" });
       User.belongsToMany(models.genre, { through: "users_genres" });
       User.belongsToMany(models.instrument, { through: models.userInstrument });
-      User.belongsToMany(models.user, { through: models.connection })
+      User.belongsToMany(models.user, {as: 'requestedId', foreignKey: 'requesterId', through: models.connection })
+      User.belongsToMany(models.user, {as: 'requesterId', foreignKey: 'requestedId', through: models.connection })
       User.hasMany(models.userInstrument);
       User.belongsToMany(models.chatroom, { through: "users_chatrooms" });
     }
