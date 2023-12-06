@@ -1,21 +1,97 @@
 const BaseController = require("./baseController");
+const { Op } = require("sequelize");
 
-class GenresController extends BaseController {
-  constructor(model, userGenreModel) {
+class ConnectionsController extends BaseController {
+  constructor(model, userModel) {
     super(model); 
-    this.userGenreModel = userGenreModel;
+    this.userModel = userModel;
   }
-  async bulkAddGenreInterest(req, res) {
+  async getUsersConnections(req, res) {
     const { userId } = req.params;
-    const { genres } = req.body; // array of genre names
-    const genreObjects = genres.map((genreId) => {userId, genreId})
     try {
-      const newGenreInterests = await this.userGenreModel.bulkCreate(genreObjects); // need to create the model
-      return res.json({ success: true, newGenreInterests });
+      const output = await this.model.findAll({
+        where: { 
+            [Op.or]:[{requesterId:userId}, {requestedId:userId}],
+            status: "confirmed"
+        },
+        order: ["createdAt"],
+        include: [{
+            model: this.userModel,
+            as: 'requesterRelation',
+            attributes: ["id", "fullName", "profilePictureUrl"],
+            where:{
+                //id: userId
+                [Op.not]:[{id:userId}]
+            },
+            required:false
+        },
+        {
+            model: this.userModel,
+            as: 'requestedRelation',
+             attributes: ["id", "fullName", "profilePictureUrl"],
+            where:{
+                // id:{[Op.ne]: userId}
+                [Op.not]:[{id:userId}]
+            },
+            required:false
+        }
+    ],
+      });
+      return res.json(output);
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async newConnection(req, res) {
+    const { requesterId, requestedId } = req.body;
+    try {
+      const newConnection = await this.model.create(
+        { 
+            requesterId,
+            requestedId, 
+            status: 'pending',
+        },
+      );
+      return res.json({ success: true, newConnection });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async updateConnection(req, res) {
+    const { requesterId, requestedId, status } = req.body;
+    try {
+      const editedConnection = await this.model.update(
+        {status},
+        {
+          where: {
+            requesterId,
+            requestedId,
+          },
+          returning: true,
+        }
+      );
+      return res.json({ success: true, editedConnection });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async deleteConnection(req, res) {
+    const { requesterId, requestedId, } = req.params;
+    try {
+      await this.model.destroy({
+        where: {
+            requesterId,
+            requestedId,
+          },
+      });
+      return res.json({ success: true });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
   }
 }
 
-module.exports = GenresController
+module.exports = ConnectionsController
