@@ -15,8 +15,6 @@ const GenresRouter = require("./routers/genresRouter");
 const InstrumentsRouter = require("./routers/instrumentsRouter");
 const ConnectionsRouter = require("./routers/connectionsRouter");
 const GroupsRouter = require("./routers/groupsRouter");
-
-const ConnectionsRouter = require("./routers/connectionsRouter")
 const NotificationsRouter = require("./routers/notificationsRouter")
 // importing Controllers
 const UsersController = require("./controllers/usersController");
