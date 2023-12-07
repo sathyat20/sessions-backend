@@ -73,6 +73,14 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        user_id: 6,
+        instrument_id: 20,
+        highest_qualification: 'Doctorate',
+        qualification_institution: 'UNDER THE SEA',
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ])
     await queryInterface.bulkInsert('users_artists', [
       {
@@ -136,6 +144,18 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        user_id: 6,
+        artist_id: 2,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        user_id: 6,
+        artist_id: 4,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ])
     await queryInterface.bulkInsert('users_genres', [
       {
@@ -189,6 +209,18 @@ module.exports = {
       {
         user_id: 5,
         genre_id: 2,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        user_id: 6,
+        genre_id: 1,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        user_id: 6,
+        genre_id: 5,
         created_at: new Date(),
         updated_at: new Date(),
       },

@@ -4,7 +4,8 @@ module.exports = (sequelize, DataTypes) => {
   class Connection extends Model {
 
     static associate(models) {
-      // define association here as further models are added
+        Connection.belongsTo(models.user, { as: 'requesterRelation', foreignKey:'requesterId'})
+        Connection.belongsTo(models.user, { as: 'requestedRelation', foreignKey:'requestedId'})
           }
   }
     Connection.init(

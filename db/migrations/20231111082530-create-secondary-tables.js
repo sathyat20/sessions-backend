@@ -1,8 +1,8 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     await Promise.all([
       queryInterface.createTable("users_artists", {
         id: {
@@ -342,6 +342,40 @@ module.exports = {
             key: "id",
           },
         },
+      }),
+
+      queryInterface.createTable("notifications", {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: Sequelize.INTEGER,
+        },
+        user_id: {
+          allowNull: false,
+          type: Sequelize.INTEGER,
+          references: {
+            model: "users",
+            key: "id",
+          },
+        },
+        origin_table: {
+          allowNull: false,
+          type: Sequelize.STRING,
+        },
+        source_id: {
+          type: Sequelize.INTEGER,
+        },
+        action: {
+          allowNull: false,
+          type: Sequelize.STRING,
+        },
+        details: {
+          type: Sequelize.TEXT,
+        },
+        has_been_viewed: {
+          type: Sequelize.BOOLEAN,
+        },
         created_at: {
           allowNull: false,
           type: Sequelize.DATE,
@@ -387,7 +421,7 @@ module.exports = {
     ]);
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     await Promise.all([
       queryInterface.dropTable("users_artists"),
       queryInterface.dropTable("users_genres"),
@@ -400,6 +434,7 @@ module.exports = {
       queryInterface.dropTable("connections"),
       queryInterface.dropTable("genres_groups"),
       queryInterface.dropTable("instruments_groups"),
+      queryInterface.dropTable("notifications"),
     ]);
-  }
+  },
 };
