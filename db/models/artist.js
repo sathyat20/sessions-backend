@@ -5,7 +5,8 @@ module.exports = (sequelize, DataTypes) => {
 
     static associate(models) {
       // define association here as further models are added
-      Artist.belongsToMany(models.user, {through:'users_artists'})
+      Artist.belongsToMany(models.user, {
+        through:'users_artists'})
           }
   }
 

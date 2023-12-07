@@ -6,10 +6,18 @@ class ConnectionsRouter {
     this.controller = controller;
   }
   routes() {
-    router.get("/:userId", this.controller.getUsersConnections.bind(this.controller));
-    router.post("/", this.controller.newConnection.bind(this.controller));
-    router.put("/", this.controller.updateConnection.bind(this.controller))
-    router.delete("/:requesterId/:requestedId", this.controller.deleteConnection.bind(this.controller));
+    router.get("/:userId", (req, res) =>
+      this.controller.getUsersConnections(req, res)
+    );
+    router.post("/", (req, res) =>
+      this.controller.newConnection(req, res)
+    );
+    router.put("/", (req, res) =>
+      this.controller.updateConnection(req, res)
+    );
+    router.delete("/:requesterId/:requestedId", (req, res) =>
+      this.controller.deleteConnection(req, res)
+    );
     return router;
   }
 }
