@@ -4,8 +4,8 @@ module.exports = (sequelize, DataTypes) => {
   class Connection extends Model {
 
     static associate(models) {
-        Connection.belongsTo(models.user, {as: 'requesterRelation', foreignKey:'requesterId'})
-        Connection.belongsTo(models.user, { as: 'requestedRelation',foreignKey:'requestedId'})
+        Connection.belongsTo(models.user, { as: 'requesterRelation', foreignKey:'requesterId'})
+        Connection.belongsTo(models.user, { as: 'requestedRelation', foreignKey:'requestedId'})
           }
   }
     Connection.init(

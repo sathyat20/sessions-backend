@@ -158,7 +158,7 @@ class UsersController extends BaseController {
       expiresIn: "60mins",
     });
 
-    return res.json({ success: true, data: token });
+    return res.json({ success: true, data: token, id:user.id});
   }
 
   /** User Methods */
@@ -376,7 +376,7 @@ class UsersController extends BaseController {
     try {
       const output = await this.videoClipModel.findAll({
         where: { userId },
-        order: ["createdAt"],
+        order: [["createdAt", "DESC"]],
       });
       return res.json(output);
     } catch (err) {

@@ -60,6 +60,13 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        requester_id: 5,
+        requested_id: 6,
+        status: 'confirmed',
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ]);
   },
 
