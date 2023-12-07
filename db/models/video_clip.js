@@ -10,25 +10,33 @@ module.exports = (sequelize, DataTypes) => {
   }
 
     VideoClip.init(
-        {
-            hostUrl: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-            userId: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                references: {
-                    model: 'user',
-                    key: 'id',
-                }
-            },
+      {
+        hostUrl: {
+          type: DataTypes.STRING,
+          allowNull: false,
         },
-        {
-            sequelize,
-            modelName: "videoClip",
-            underscored: true,
-        }
-  );
+        userId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: "user",
+            key: "id",
+          },
+        },
+        groupId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: "group",
+            key: "id",
+          },
+        },
+      },
+      {
+        sequelize,
+        modelName: "videoClip",
+        underscored: true,
+      }
+    );
   return VideoClip;
 };

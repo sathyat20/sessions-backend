@@ -37,5 +37,5 @@ module.exports = (sequelize, DataTypes) => {
             tableName: "connections"
         }
   );
-  return UserInstrument;
+  return Connection;
 };

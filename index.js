@@ -13,7 +13,8 @@ const ChatroomRouter = require("./routers/chatroomsRouter");
 const ArtistsRouter = require("./routers/artistsRouter");
 const GenresRouter = require("./routers/genresRouter");
 const InstrumentsRouter = require("./routers/instrumentsRouter");
-const ConnectionsRouter = require("./routers/connectionsRouter")
+const ConnectionsRouter = require("./routers/connectionsRouter");
+const GroupsRouter = require("./routers/groupsRouter");
 
 // importing Controllers
 const UsersController = require("./controllers/usersController");
@@ -22,6 +23,7 @@ const ArtistsController = require("./controllers/artistsController");
 const GenresController = require("./controllers/genresController");
 const InstrumentsController = require("./controllers/instrumentsController");
 const ConnectionsController = require("./controllers/connectionsController");
+const GroupsController = require("./controllers/groupsController");
 
 // importing DB
 const db = require("./db/models/index"); //open up index.js in db/models
@@ -37,7 +39,11 @@ const {
   attachment,
   userArtist,
   userGenre,
-  connection
+  connection,
+  group,
+  userGroup,
+  genreGroup,
+  instrumentGroup, 
 } = db;
 
 // initializing Controllers -> note the lowercase for the first word
@@ -52,6 +58,17 @@ const usersController = new UsersController(
   userChatroomMessage,
   attachment
 );
+
+const groupsController = new GroupsController(
+  group,
+  user,
+  userGroup,
+  genreGroup,
+  instrumentGroup,
+  genre,
+  instrument
+);
+
 const artistsController = new ArtistsController(artist, userArtist);
 const genresController = new GenresController(genre, userGenre);
 const instrumentsController = new InstrumentsController(
@@ -80,6 +97,7 @@ const artistsRouter = new ArtistsRouter(artistsController).routes();
 const genresRouter = new GenresRouter(genresController).routes();
 const instrumentsRouter = new InstrumentsRouter(instrumentsController).routes();
 const connectionsRouter = new ConnectionsRouter(connectionsController).routes();
+const groupsRouter = new GroupsRouter(groupsController).routes();
 
 // Enable CORS access to this server
 const corsOptions = {
@@ -97,6 +115,7 @@ app.use("/artists", artistsRouter);
 app.use("/genres", genresRouter);
 app.use("/instruments", instrumentsRouter);
 app.use("/connections", connectionsRouter);
+app.use("/groups", groupsRouter);
 
 //activate backend
 const server = app.listen(PORT, () => {

@@ -148,6 +148,43 @@ module.exports = {
           type: Sequelize.DATE,
         },
       }),
+
+      queryInterface.createTable("groups", {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: Sequelize.INTEGER,
+        },
+        group_name: {
+          allowNull: false,
+          type: Sequelize.STRING,
+        },
+        is_public: {
+          allowNull: false,
+          type: Sequelize.BOOLEAN,
+        },
+        ensemble_type: {
+          allowNull: false,
+          type: Sequelize.STRING,
+        },
+        career_status: {
+          allowNull: false,
+          type: Sequelize.STRING,
+        },
+        bio: {
+          allowNull: true,
+          type: Sequelize.STRING,
+        },
+        created_at: {
+          allowNull: false,
+          type: Sequelize.DATE,
+        },
+        updated_at: {
+          allowNull: false,
+          type: Sequelize.DATE,
+        },
+      }),
     ]);
   },
 
@@ -159,6 +196,7 @@ module.exports = {
       queryInterface.dropTable("genres"),
       queryInterface.dropTable("songs"),
       queryInterface.dropTable("chatrooms"),
+      queryInterface.dropTable("groups")
     ]);
   },
 };
