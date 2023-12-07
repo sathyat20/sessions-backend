@@ -2,9 +2,10 @@ const BaseController = require("./baseController");
 const { Op } = require("sequelize");
 
 class ConnectionsController extends BaseController {
-  constructor(model, userModel) {
+  constructor(model, userModel, notificationModel) {
     super(model); 
     this.userModel = userModel;
+    this.notificationModel = notificationModel;
   }
   async getUsersConnections(req, res) {
     const { userId } = req.params;
@@ -20,7 +21,6 @@ class ConnectionsController extends BaseController {
             as: 'requesterRelation',
             attributes: ["id", "fullName", "profilePictureUrl"],
             where:{
-                //id: userId
                 [Op.not]:[{id:userId}]
             },
             required:false
@@ -30,7 +30,6 @@ class ConnectionsController extends BaseController {
             as: 'requestedRelation',
              attributes: ["id", "fullName", "profilePictureUrl"],
             where:{
-                // id:{[Op.ne]: userId}
                 [Op.not]:[{id:userId}]
             },
             required:false
@@ -53,7 +52,17 @@ class ConnectionsController extends BaseController {
             status: 'pending',
         },
       );
-      return res.json({ success: true, newConnection });
+      const notification  = await this.notificationModel.create(
+        {
+            userId:requestedId,
+            originTable:"connections",
+            sourceId: requesterId,
+            action: "post",
+            details: "",
+            hasBeenViewed: false
+        }
+      )
+      return res.json({ success: true, newConnection, notification });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }

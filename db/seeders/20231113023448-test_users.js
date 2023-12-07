@@ -65,6 +65,16 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        full_name: "Huge Tortoise",
+        password: bcrypt.hashSync("hello6", 10),
+        profile_picture_url:
+          "https://firebasestorage.googleapis.com/v0/b/sessions-7df6d.appspot.com/o/userprofilepictures%2Ftortoise.jfif?alt=media&token=dfefdb9c-39c9-4281-8880-e37c91dd0d7f",
+        bio: "I like to eat cabbage and shrimp and Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        experience:8,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ]);
   },
 

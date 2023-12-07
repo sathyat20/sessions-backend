@@ -14,7 +14,7 @@ const ArtistsRouter = require("./routers/artistsRouter");
 const GenresRouter = require("./routers/genresRouter");
 const InstrumentsRouter = require("./routers/instrumentsRouter");
 const ConnectionsRouter = require("./routers/connectionsRouter")
-
+const NotificationsRouter = require("./routers/notificationsRouter")
 // importing Controllers
 const UsersController = require("./controllers/usersController");
 const ChatroomsController = require("./controllers/chatroomsController");
@@ -22,6 +22,7 @@ const ArtistsController = require("./controllers/artistsController");
 const GenresController = require("./controllers/genresController");
 const InstrumentsController = require("./controllers/instrumentsController");
 const ConnectionsController = require("./controllers/connectionsController");
+const NotificationsController = require("./controllers/notificationsController");
 
 // importing DB
 const db = require("./db/models/index"); //open up index.js in db/models
@@ -37,7 +38,8 @@ const {
   attachment,
   userArtist,
   userGenre,
-  connection
+  connection,
+  notification
 } = db;
 
 // initializing Controllers -> note the lowercase for the first word
@@ -68,6 +70,11 @@ const chatroomsController = new ChatroomsController(
 const connectionsController = new ConnectionsController(
   connection,
   user,
+  notification
+);
+
+const notificationsController = new NotificationsController(
+  notification
 );
 
 // initializing Routers
@@ -80,6 +87,7 @@ const artistsRouter = new ArtistsRouter(artistsController).routes();
 const genresRouter = new GenresRouter(genresController).routes();
 const instrumentsRouter = new InstrumentsRouter(instrumentsController).routes();
 const connectionsRouter = new ConnectionsRouter(connectionsController).routes();
+const notificationsRouter = new NotificationsRouter(notificationsController).routes();
 
 // Enable CORS access to this server
 const corsOptions = {
@@ -97,6 +105,7 @@ app.use("/artists", artistsRouter);
 app.use("/genres", genresRouter);
 app.use("/instruments", instrumentsRouter);
 app.use("/connections", connectionsRouter);
+app.use("/notifications", notificationsRouter);
 
 //activate backend
 const server = app.listen(PORT, () => {

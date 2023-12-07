@@ -273,9 +273,50 @@ module.exports = {
           type: Sequelize.DATE,
         },
       }),
+
+      queryInterface.createTable('notifications', {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: Sequelize.INTEGER,
+        },
+        user_id: {
+          allowNull: false,
+          type: Sequelize.INTEGER,
+          references: {
+            model:'users',
+            key:'id',
+          }
+        },
+        origin_table: {
+          allowNull: false,
+          type: Sequelize.STRING,
+        },
+        source_id: {
+          type: Sequelize.INTEGER,
+        },
+        action: {
+          allowNull: false,
+          type: Sequelize.STRING,
+        },
+        details: {
+          type: Sequelize.TEXT,
+        },
+        has_been_viewed: {
+          type: Sequelize.BOOLEAN,
+        },
+        created_at: {
+          allowNull: false,
+          type: Sequelize.DATE,
+        },
+        updated_at: {
+          allowNull: false,
+          type: Sequelize.DATE,
+        },
+      }),
     ])
   },
-
   
 
   async down (queryInterface, Sequelize) {
@@ -288,6 +329,7 @@ module.exports = {
       queryInterface.dropTable('video_clips'),
       queryInterface.dropTable('jam_sessions'),
       queryInterface.dropTable('connections'),
+      queryInterface.dropTable('notifications'),
     ])
   }
 };
