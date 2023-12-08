@@ -166,7 +166,7 @@ class UsersController extends BaseController {
     const userId = req.userId;
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user });
+      return res.json({ success: true, user, ownId:userId });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
@@ -194,9 +194,10 @@ class UsersController extends BaseController {
 
   async getOneUser(req, res) {
     const { userId } = req.params;
+    const ownId = req.userId
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user });
+      return res.json({ success: true, user, ownId });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }

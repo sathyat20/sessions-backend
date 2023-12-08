@@ -11,7 +11,6 @@ module.exports = (sequelize, DataTypes) => {
         through: "users_genres",
       });
       User.belongsToMany(models.instrument, {
-        as: "Instruments",
         through: models.userInstrument,
       });
       User.belongsToMany(models.user, {
