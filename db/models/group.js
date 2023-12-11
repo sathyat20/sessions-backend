@@ -22,12 +22,14 @@ module.exports = (sequelize, DataTypes) => {
         as: "instrumentGroupId",
       });
 
-      Group.belongsToMany(models.videoClip, {
-        through: "video_clips",
-        foreignKey: "groupId",
-        as: "videoClipGroups",
+      Group.hasMany(models.videoClip, {
+        foreignKey: "groupId"
       });
 
+      Group.belongsToMany(models.user, {
+        through: models.videoClip,
+        foreignKey: "groupId",
+      });
     }
   }
   Group.init(
@@ -52,6 +54,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         type: DataTypes.STRING,
       },
+      profilePictureUrl: {
+        allowNull: true,
+        type: DataTypes.STRING
+      }
     },
     {
       sequelize,

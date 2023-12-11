@@ -4,9 +4,8 @@ module.exports = (sequelize, DataTypes) => {
   class VideoClip extends Model {
 
     static associate(models) {
-      // define association here as further models are added
-      VideoClip.belongsTo(models.user)
-          }
+      // define association here as further models are added   
+    }
   }
 
     VideoClip.init(

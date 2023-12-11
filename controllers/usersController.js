@@ -401,7 +401,6 @@ class UsersController extends BaseController {
     }
   }
 
-
   async addProfilePicture(req, res) {
     const { photoURL } = req.body;
     let userId = req.userId; // from Middleware
