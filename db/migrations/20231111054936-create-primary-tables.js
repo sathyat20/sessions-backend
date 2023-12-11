@@ -176,6 +176,10 @@ module.exports = {
           allowNull: true,
           type: Sequelize.STRING,
         },
+        profile_picture_url: {
+          allowNull: true,
+          type: Sequelize.STRING,
+        },
         created_at: {
           allowNull: false,
           type: Sequelize.DATE,
