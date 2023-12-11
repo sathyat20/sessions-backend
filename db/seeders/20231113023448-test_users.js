@@ -22,7 +22,7 @@ module.exports = {
           "https://firebasestorage.googleapis.com/v0/b/dev-portfolio-sq.appspot.com/o/musician_app_assets%2Fguitarprofile1.jpg?alt=media&token=136000d4-8c6c-4135-a0c0-535f3a9a3984",
         bio: "I love playing the guitar and listening to taylor swift",
         experience: 10,
-        career_status: "Semi-Pro",
+        career_status: "Semipro",
         created_at: new Date(),
         updated_at: new Date(),
       },
