@@ -15,8 +15,6 @@ const GenresRouter = require("./routers/genresRouter");
 const InstrumentsRouter = require("./routers/instrumentsRouter");
 const ConnectionsRouter = require("./routers/connectionsRouter");
 const GroupsRouter = require("./routers/groupsRouter");
-
-const ConnectionsRouter = require("./routers/connectionsRouter")
 const NotificationsRouter = require("./routers/notificationsRouter")
 // importing Controllers
 const UsersController = require("./controllers/usersController");
@@ -107,7 +105,7 @@ const genresRouter = new GenresRouter(genresController).routes();
 const instrumentsRouter = new InstrumentsRouter(instrumentsController).routes();
 const connectionsRouter = new ConnectionsRouter(connectionsController).routes();
 const groupsRouter = new GroupsRouter(groupsController).routes();
-const notificationsRouter = new NotificationsRouter(notificationsController).routes();
+const notificationsRouter = new NotificationsRouter(notificationsController, jwtAuth).routes();
 
 // Enable CORS access to this server
 const corsOptions = {
