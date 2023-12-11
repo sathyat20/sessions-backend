@@ -166,27 +166,73 @@ class UsersController extends BaseController {
     const userId = req.userId;
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user });
+      return res.json({ success: true, user, ownId:userId });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
   }
-
-  async getFilteredUsers(req, res) {//filter by artists, instruments, genres
+//http://localhost:8080/users/filteredusers/instruments/Acoustic%20Guitar this works
+//http://localhost:8080/users/filteredusers/genres/Classical
+  async getFilteredUsers(req, res) {//filter by artists, instruments, genres, musicianship(careerstatus), qualifications
     const { category, option } = req.params; //option is case sensitive!
-    const inputArray = [{
-      model:this.instrumentModel,
-    }]
+    const inputArray = ['instruments']
     if (category !== 'instruments') {
       inputArray.push(category)
     }
+    console.log(inputArray)
     try {
       const filteredUsers = await this.model.findAll({ 
-        include: inputArray,
-        where: { [`$${category}.name$`]: option }, 
-        order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'instrumentExperience', 'DESC']]
+        include: inputArray, // include all the tables listed in criteria
+        where: { [`$${category}.name$`]: option }, //find all user entries matching selected category and option
+        // order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'createdAt', 'DESC']]
       });
       return res.json({ success: true, filteredUsers });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+  //qualifications
+
+  //http://localhost:8080/users/search?instruments=Acoustic%20Guitar
+  //http://localhost:8080/users/search?instruments=Acoustic%20Guitar&genres=Classical
+  
+  async getMultiFilteredUsers(req, res) {//filter by artists, instruments, genres first
+    //pull the inputs from query params
+    const selectionsArray = Object.entries(req.query)
+   
+    //initialising the query inputs
+    const tablesToInclude = [{ // we want to include these tables
+      model:this.instrumentModel,
+    }]
+    const tablesNotToAdd = ['qualifications', 'musicianship', 'instruments']
+    const whereObject = {} //at the same time we also need to generate the where clause
+
+    //iterating through the unpacked selections and populating the query inputs
+    selectionsArray.forEach((selection)=>{ 
+      const category = selection[0];
+      const chosenValue = selection[1];
+      if (!tablesNotToAdd.includes(category)) { // if category isn't one of the 'don't add' tables
+        tablesToInclude.push(category) // note category must be exactly equal to table name)
+      }   
+      if (category === 'musicianship') {
+        whereObject[`careerStatus`] = chosenValue;
+      } else if (category === 'qualifications') {
+        whereObject['$instruments.userInstrument.highest_qualification$'] = chosenValue;
+        //
+      } else {
+        whereObject[`$${category}.name$`] = chosenValue 
+      }
+    })
+
+    //actual query
+    try {
+      const results = await this.model.findAll({ 
+        include: tablesToInclude, // include all the tables listed in criteria
+        where: whereObject, //find all user entries matching selected category and option
+        // order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'instrumentExperience', 'DESC']]
+      });
+
+      return res.json({ success: true, results, userId:req.userId });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
@@ -194,9 +240,10 @@ class UsersController extends BaseController {
 
   async getOneUser(req, res) {
     const { userId } = req.params;
+    const ownId = req.userId
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user });
+      return res.json({ success: true, user, ownId });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }

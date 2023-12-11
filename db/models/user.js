@@ -5,16 +5,11 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here as further models are added
       // User.hasMany(models.videoClip);
-      User.belongsToMany(models.artist, {
-        as: "Artists",
-        through: "users_artists",
-      });
+      User.belongsToMany(models.artist, { through: "users_artists" });
       User.belongsToMany(models.genre, {
-        as: "Genres",
         through: "users_genres",
       });
       User.belongsToMany(models.instrument, {
-        as: "Instruments",
         through: models.userInstrument,
       });
       User.belongsToMany(models.user, {
