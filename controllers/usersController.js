@@ -196,7 +196,7 @@ class UsersController extends BaseController {
   //http://localhost:8080/users/search?instruments=Acoustic%20Guitar
   //http://localhost:8080/users/search?instruments=Acoustic%20Guitar&genres=Classical
   
-  async getMultiFilteredUsers(req, res) {//filter by artists, instruments, genres first
+  async getMultiFilteredUsers(req, res) {
     //pull the inputs from query params
     const selectionsArray = Object.entries(req.query)
    
@@ -269,19 +269,18 @@ class UsersController extends BaseController {
 
   async putOneUser(req, res) {
     const { userId } = req.params;
-    const { fullName, profilePictureUrl, bio, experience } = req.body;
+    const { fullName, profilePictureUrl, bio, experience, careerStatus, email  } = req.body;
     console.log(req.body)
-    // if (!fullName && !profilePictureUrl && !bio && !experience) {
-    //   res.status(400).json({ success: false, msg: "input error" });
-    // }
+    console.log(userId)
     try {
       const editedUser = await this.model.update(
-        // updateObject,
         {
           fullName,
           profilePictureUrl,
           bio,
           experience,
+          careerStatus,
+          email
         },
         {
           where: { id: userId },
@@ -405,7 +404,6 @@ class UsersController extends BaseController {
   async addProfilePicture(req, res) {
     const { photoURL } = req.body;
     let userId = req.userId; // from Middleware
-
     try {
       const addToUser = await this.model.findByPk(userId);
       const addProfilePic = await addToUser.update({
@@ -432,12 +430,16 @@ class UsersController extends BaseController {
   }
 
   async postClip(req, res) {
-    const { userId } = req.params;
+    const userId  = req.userId;
     const { hostUrl } = req.body;
+    console.log('running')
     try {
-      const newClip = await this.model.createvideoClip(
-        { hostUrl },
-        { where: { id: userId } }
+      const newClip = await this.videoClipModel.create(
+        { 
+        userId,
+        groupId:null,
+        hostUrl:hostUrl   
+      }
       );
       return res.json({ success: true, newClip });
     } catch (err) {
@@ -466,7 +468,8 @@ class UsersController extends BaseController {
   }
 
   async deleteClip(req, res) {
-    const { userId, clipId } = req.params;
+    const { clipId } = req.params;
+    const userId  = req.userId;
     try {
       await this.videoClipModel.destroy({
         where: {

@@ -17,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
         },
         userId: {
           type: DataTypes.INTEGER,
-          allowNull: false,
           references: {
             model: "user",
             key: "id",
@@ -25,7 +24,6 @@ module.exports = (sequelize, DataTypes) => {
         },
         groupId: {
           type: DataTypes.INTEGER,
-          allowNull: false,
           references: {
             model: "group",
             key: "id",
