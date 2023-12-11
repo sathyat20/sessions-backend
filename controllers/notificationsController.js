@@ -7,7 +7,8 @@ class NotificationsController extends BaseController {
   }
 
   async getUsersNotifications(req, res) {
-    const { userId } = req.params;
+    const userId = req.userId;
+    console.log(req)
     try {
         const notifications = await this.model.findAll({
             where: { userId },

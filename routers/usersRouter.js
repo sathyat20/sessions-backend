@@ -30,6 +30,10 @@ class UsersRouter {
       this.controller.getFilteredUsers.bind(this.controller)
     );
     router.get(
+      "/search",
+      this.controller.getMultiFilteredUsers.bind(this.controller)
+    );
+    router.get(
       "/getCurrentUser",
       this.controller.getCurrentUser.bind(this.controller)
     );
