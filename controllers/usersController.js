@@ -1,6 +1,8 @@
 const BaseController = require("./baseController");
 const bcrypt = require("bcrypt"); // hashing User inputs on Sign Up / Log In
 const jwt = require("jsonwebtoken");
+const { Op } = require("sequelize");
+
 require("dotenv").config();
 
 class UsersController extends BaseController {
@@ -249,6 +251,24 @@ class UsersController extends BaseController {
     }
   }
 
+  async getUsersByName(req, res) {
+    const { userName } = req.params;
+    console.log(userName)
+    try {
+      const users = await this.model.findAll({
+        where: {
+          fullName: {
+            [Op.startsWith]:userName
+          }
+        },
+      });
+      console.log(users)
+      return res.json({ success: true, users});
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
   async postOneUser(req, res) {
     const { fullName } = req.body;
     if (!fullName) {
@@ -421,6 +441,7 @@ class UsersController extends BaseController {
       const output = await this.videoClipModel.findAll({
         where: { userId },
         order: [["createdAt", "DESC"]],
+        attributes:["id", "createdAt", "updatedAt", "hostUrl", "userId", "groupId"]
       });
       return res.json(output);
     } catch (err) {
@@ -469,6 +490,7 @@ class UsersController extends BaseController {
   async deleteClip(req, res) {
     const { clipId } = req.params;
     const userId  = req.userId;
+    console.log('something')
     try {
       await this.videoClipModel.destroy({
         where: {

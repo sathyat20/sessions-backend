@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       // define association here as further models are added
-      // User.hasMany(models.videoClip);
+      User.hasMany(models.videoClip);
       User.belongsToMany(models.artist, { through: "users_artists" });
       User.belongsToMany(models.genre, {
         through: "users_genres",
@@ -30,13 +30,6 @@ module.exports = (sequelize, DataTypes) => {
         through: "userGroup",
         // foreignKey: "userId",
         as: "Groups",
-      });
-      User.hasMany(models.videoClip, {
-        foreignKey: "userId",
-      });
-      User.belongsToMany(models.group, {
-        through: "videoClip",
-        foreignKey: "userId",
       });
     }
   }

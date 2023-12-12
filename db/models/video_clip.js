@@ -10,6 +10,11 @@ module.exports = (sequelize, DataTypes) => {
 
     VideoClip.init(
       {
+        // id: {
+        //   type:DataTypes.INTEGER,
+        //   allowNull:false,
+        //   primaryKey:true
+        // },
         hostUrl: {
           type: DataTypes.STRING,
           allowNull: false,

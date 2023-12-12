@@ -10,10 +10,10 @@ module.exports = (sequelize, DataTypes) => {
         as: "Users",
       });
 
-      Group.belongsToMany(models.genreGroup, {
-        through: "genres_groups",
-        foreignKey: "groupId",
-        as: "genreGroupId",
+      Group.belongsToMany(models.genre, {
+        through: models.genreGroup,
+        // foreignKey: "groupId",
+        // as: "genreGroupId",
       });
 
       Group.belongsToMany(models.instrumentGroup, {
@@ -26,10 +26,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "groupId"
       });
 
-      Group.belongsToMany(models.user, {
-        through: models.videoClip,
-        foreignKey: "groupId",
-      });
+      // Group.belongsToMany(models.user, {
+      //   through: models.videoClip,
+      //   foreignKey: "groupId",
+      // });
     }
   }
   Group.init(
