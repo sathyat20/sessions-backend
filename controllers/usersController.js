@@ -168,25 +168,25 @@ class UsersController extends BaseController {
     const userId = req.userId;
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user, ownId:userId });
+      return res.json({ success: true, user });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
   }
-//http://localhost:8080/users/filteredusers/instruments/Acoustic%20Guitar this works
-//http://localhost:8080/users/filteredusers/genres/Classical
-  async getFilteredUsers(req, res) {//filter by artists, instruments, genres, musicianship(careerstatus), qualifications
+
+  async getFilteredUsers(req, res) {//filter by artists, instruments, genres
     const { category, option } = req.params; //option is case sensitive!
-    const inputArray = ['instruments']
+    const inputArray = [{
+      model:this.instrumentModel,
+    }]
     if (category !== 'instruments') {
       inputArray.push(category)
     }
-    console.log(inputArray)
     try {
       const filteredUsers = await this.model.findAll({ 
-        include: inputArray, // include all the tables listed in criteria
-        where: { [`$${category}.name$`]: option }, //find all user entries matching selected category and option
-        // order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'createdAt', 'DESC']]
+        include: inputArray,
+        where: { [`$${category}.name$`]: option }, 
+        order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'instrumentExperience', 'DESC']]
       });
       return res.json({ success: true, filteredUsers });
     } catch (err) {
@@ -242,10 +242,9 @@ class UsersController extends BaseController {
 
   async getOneUser(req, res) {
     const { userId } = req.params;
-    const ownId = req.userId
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user, ownId });
+      return res.json({ success: true, user });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }

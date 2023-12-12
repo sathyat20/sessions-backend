@@ -4,6 +4,8 @@ module.exports = (sequelize, DataTypes) => {
   class VideoClip extends Model {
 
     static associate(models) {
+      // define association here as further models are added
+      VideoClip.belongsTo(models.group)  
       // define association here as further models are added   
     }
   }
@@ -37,6 +39,7 @@ module.exports = (sequelize, DataTypes) => {
       {
         sequelize,
         modelName: "videoClip",
+        tableName: "video_clips",
         underscored: true,
       }
     );
