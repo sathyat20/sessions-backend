@@ -29,9 +29,8 @@ class UsersRouter {
       "/filteredusers/:category/:option",
       this.controller.getFilteredUsers.bind(this.controller)
     );
-    router.get(
-      "/search",
-      this.controller.getMultiFilteredUsers.bind(this.controller)
+    router.get("/search", (req, res) =>
+      this.controller.getMultiFilteredUsers(req, res)
     );
     router.get(
       "/getCurrentUser",

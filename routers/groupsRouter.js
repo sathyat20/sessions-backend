@@ -13,6 +13,7 @@ class GroupsRouter {
     router.post("/", this.controller.postOne.bind(this.controller));
     router.get("/:userId", this.controller.getUserGroups.bind(this.controller));
     router.post("/newgroup", this.controller.createGroup.bind(this.controller));
+    router.put("/edit/:groupId", this.controller.updateGroup.bind(this.controller));
 
     return router;
   }

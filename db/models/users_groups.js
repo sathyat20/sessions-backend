@@ -3,18 +3,8 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class UserGroup extends Model {
     static associate(models) {
-      // define association here as further models are added
-      // UserGroup.belongsToMany(models.user, {
-      //   through: "users_groups",
-      //   foreignKey: "userId",
-      //   as: "users",
-      // });
-      // UserGroup.belongsToMany(models.group, {
-      //    through: "users_groups",
-      //   foreignKey: "groupId",
-      //   as: "groups",
-      // }
-      // );
+      UserGroup.belongsTo(models.user);
+      UserGroup.belongsTo(models.group);
     }
   }
   UserGroup.init(

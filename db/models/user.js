@@ -30,17 +30,18 @@ module.exports = (sequelize, DataTypes) => {
         through: "users_chatrooms",
       });
       User.belongsToMany(models.group, {
-        through: "userGroup",
+        through: models.userGroup,
         // foreignKey: "userId",
-        as: "Groups",
+        // as: "Groups",
       });
       User.hasMany(models.videoClip, {
         foreignKey: "userId",
       });
-      User.belongsToMany(models.group, {
-        through: "videoClip",
-        foreignKey: "userId",
-      });
+      // User.belongsToMany(models.group, {
+      //   through: models.videoClip,
+      //   foreignKey: "userId",
+      // });
+      
     }
   }
   User.init(
