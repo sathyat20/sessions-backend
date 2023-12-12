@@ -5,7 +5,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here as further models are added
       // User.hasMany(models.videoClip);
-      User.belongsToMany(models.artist, { through: "users_artists" });
+      User.belongsToMany(models.artist, {
+        as: "Artists",
+        through: "users_artists",
+      });
       User.belongsToMany(models.genre, {
         through: "users_genres",
       });
@@ -27,17 +30,17 @@ module.exports = (sequelize, DataTypes) => {
         through: "users_chatrooms",
       });
       User.belongsToMany(models.group, {
-        through: "userGroup",
+        through: models.userGroup,
         // foreignKey: "userId",
-        as: "Groups",
+        // as: "Groups",
       });
       User.hasMany(models.videoClip, {
         foreignKey: "userId",
       });
-      User.belongsToMany(models.group, {
-        through: "videoClip",
-        foreignKey: "userId",
-      });
+      // User.belongsToMany(models.group, {
+      //   through: models.videoClip,
+      //   foreignKey: "userId",
+      // });
     }
   }
   User.init(

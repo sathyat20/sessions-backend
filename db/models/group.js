@@ -5,9 +5,9 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here as further models are added
       Group.belongsToMany(models.user, {
-        through: "userGroup",
+        through: models.userGroup,
         // foreignKey: "groupId",
-        as: "Users",
+        // as: "Users",
       });
 
       Group.belongsToMany(models.genreGroup, {
@@ -22,14 +22,13 @@ module.exports = (sequelize, DataTypes) => {
         as: "instrumentGroupId",
       });
 
-      Group.hasMany(models.videoClip, {
-        foreignKey: "groupId"
-      });
+      this.hasMany(models.videoClip);
+      this.hasMany(models.userGroup)
 
-      Group.belongsToMany(models.user, {
-        through: models.videoClip,
-        foreignKey: "groupId",
-      });
+      // Group.belongsToMany(models.user, {
+      //   through: models.videoClip,
+      //   foreignKey: "groupId",
+      // });
     }
   }
   Group.init(

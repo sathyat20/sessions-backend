@@ -106,10 +106,7 @@ const artistsRouter = new ArtistsRouter(artistsController).routes();
 const genresRouter = new GenresRouter(genresController).routes();
 const instrumentsRouter = new InstrumentsRouter(instrumentsController).routes();
 const connectionsRouter = new ConnectionsRouter(connectionsController).routes();
-
 const groupsRouter = new GroupsRouter(groupsController, jwtAuth).routes();
-
-
 const notificationsRouter = new NotificationsRouter(notificationsController, jwtAuth).routes();
 
 // Enable CORS access to this server
