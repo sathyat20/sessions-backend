@@ -41,7 +41,6 @@ module.exports = (sequelize, DataTypes) => {
       //   through: models.videoClip,
       //   foreignKey: "userId",
       // });
-      
     }
   }
   User.init(

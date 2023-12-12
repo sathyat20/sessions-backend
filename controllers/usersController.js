@@ -191,6 +191,52 @@ class UsersController extends BaseController {
       return res.status(400).json({ error: true, msg: err });
     }
   }
+  //qualifications
+
+  //http://localhost:8080/users/search?instruments=Acoustic%20Guitar
+  //http://localhost:8080/users/search?instruments=Acoustic%20Guitar&genres=Classical
+  
+  async getMultiFilteredUsers(req, res) {
+    //pull the inputs from query params
+    const selectionsArray = Object.entries(req.query)
+   
+    //initialising the query inputs
+    const tablesToInclude = [{ // we want to include these tables
+      model:this.instrumentModel,
+    }]
+    const tablesNotToAdd = ['qualifications', 'musicianship', 'instruments']
+    const whereObject = {} //at the same time we also need to generate the where clause
+
+    //iterating through the unpacked selections and populating the query inputs
+    selectionsArray.forEach((selection)=>{ 
+      const category = selection[0];
+      const chosenValue = selection[1];
+      if (!tablesNotToAdd.includes(category)) { // if category isn't one of the 'don't add' tables
+        tablesToInclude.push(category) // note category must be exactly equal to table name)
+      }   
+      if (category === 'musicianship') {
+        whereObject[`careerStatus`] = chosenValue;
+      } else if (category === 'qualifications') {
+        whereObject['$instruments.userInstrument.highest_qualification$'] = chosenValue;
+        //
+      } else {
+        whereObject[`$${category}.name$`] = chosenValue 
+      }
+    })
+
+    //actual query
+    try {
+      const results = await this.model.findAll({ 
+        include: tablesToInclude, // include all the tables listed in criteria
+        where: whereObject, //find all user entries matching selected category and option
+        // order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'instrumentExperience', 'DESC']]
+      });
+
+      return res.json({ success: true, results, userId:req.userId });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
 
   async getOneUser(req, res) {
     const { userId } = req.params;
@@ -222,19 +268,18 @@ class UsersController extends BaseController {
 
   async putOneUser(req, res) {
     const { userId } = req.params;
-    const { fullName, profilePictureUrl, bio, experience } = req.body;
+    const { fullName, profilePictureUrl, bio, experience, careerStatus, email  } = req.body;
     console.log(req.body)
-    // if (!fullName && !profilePictureUrl && !bio && !experience) {
-    //   res.status(400).json({ success: false, msg: "input error" });
-    // }
+    console.log(userId)
     try {
       const editedUser = await this.model.update(
-        // updateObject,
         {
           fullName,
           profilePictureUrl,
           bio,
           experience,
+          careerStatus,
+          email
         },
         {
           where: { id: userId },
@@ -354,11 +399,9 @@ class UsersController extends BaseController {
     }
   }
 
-
   async addProfilePicture(req, res) {
     const { photoURL } = req.body;
     let userId = req.userId; // from Middleware
-
     try {
       const addToUser = await this.model.findByPk(userId);
       const addProfilePic = await addToUser.update({
@@ -385,12 +428,16 @@ class UsersController extends BaseController {
   }
 
   async postClip(req, res) {
-    const { userId } = req.params;
+    const userId  = req.userId;
     const { hostUrl } = req.body;
+    console.log('running')
     try {
-      const newClip = await this.model.createvideoClip(
-        { hostUrl },
-        { where: { id: userId } }
+      const newClip = await this.videoClipModel.create(
+        { 
+        userId,
+        groupId:null,
+        hostUrl:hostUrl   
+      }
       );
       return res.json({ success: true, newClip });
     } catch (err) {
@@ -419,7 +466,8 @@ class UsersController extends BaseController {
   }
 
   async deleteClip(req, res) {
-    const { userId, clipId } = req.params;
+    const { clipId } = req.params;
+    const userId  = req.userId;
     try {
       await this.videoClipModel.destroy({
         where: {

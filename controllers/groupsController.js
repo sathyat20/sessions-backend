@@ -79,7 +79,7 @@ class GroupsController extends BaseController {
   //   }
   // }
 
-  async getUserGroups(req, res) {
+async getUserGroups(req, res) {
     const userId = req.params.userId;
 
     try {
@@ -114,6 +114,7 @@ class GroupsController extends BaseController {
       return res.status(400).json({ error: true, msg: err.message });
     }
   }
+
 
   async createGroup(req, res) {
     console.log("UserId from req: ", req.userId);
@@ -208,6 +209,7 @@ class GroupsController extends BaseController {
       return res.status(400).json({ error: true, msg: err.message });
     }
   }
+
 }
 
 module.exports = GroupsController;

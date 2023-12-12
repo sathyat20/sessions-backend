@@ -14,7 +14,6 @@ class GroupsRouter {
     router.get("/:userId", this.controller.getUserGroups.bind(this.controller));
     router.post("/newgroup", this.controller.createGroup.bind(this.controller));
     router.put("/edit/:groupId", this.controller.updateGroup.bind(this.controller));
-
     return router;
   }
 }
