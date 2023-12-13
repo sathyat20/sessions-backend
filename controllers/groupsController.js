@@ -290,7 +290,11 @@ async getUserGroups(req, res) {
         isAdmin: ug.isAdmin, 
       }));
 
-      return res.status(200).json(members);
+      return res.status(200).json(members);} 
+      catch (err) {
+      return res.status(400).json({ error: true, msg: err.message });
+    }}
+
 
   //http://localhost:8080/groups/search?genres=Classical
   //http://localhost:8080/groups/search?ensemble_type=Jazz%20Band&genres=Jazz
