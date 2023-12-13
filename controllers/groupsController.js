@@ -295,6 +295,7 @@ async getUserGroups(req, res) {
       return res.status(400).json({ error: true, msg: err.message });
     }}
 
+
   //http://localhost:8080/groups/search?genres=Classical
   //http://localhost:8080/groups/search?ensemble_type=Jazz%20Band&genres=Jazz
   async getMultiFilteredGroups(req, res) {

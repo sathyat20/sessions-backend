@@ -32,8 +32,6 @@ class GroupsRouter {
       "/:groupId/members",
       this.controller.getGroupMembers.bind(this.controller)
     );
-
-    
     router.post("/addMember", this.controller.addMember.bind(this.controller));
     router.delete("/:groupId/:userId", this.controller.removeMember.bind(this.controller));
     return router;

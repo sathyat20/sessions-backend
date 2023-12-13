@@ -308,9 +308,13 @@ class UsersController extends BaseController {
 
   async putOneUser(req, res) {
     const { userId } = req.params;
+    // if (!fullName && !profilePictureUrl && !bio && !experience) {
+    //   res.status(400).json({ success: false, msg: "input error" });
+    // }
     const { fullName, profilePictureUrl, bio, experience, careerStatus, email  } = req.body;
     console.log(req.body)
     console.log(userId)
+
     try {
       const editedUser = await this.model.update(
         {
