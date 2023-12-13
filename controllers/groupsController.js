@@ -106,6 +106,9 @@ async getUserGroups(req, res) {
           {
             model: this.videoClipModel,
           },
+          {
+            model:this.genreModel,
+          }
           // {
           //   model:this.userGroupModel
           // }
@@ -289,7 +292,22 @@ async getGroup(req, res) {
     try {
       const group = await this.groupModel.findOne({
         where: {id:groupId},
-        include:[{model:this.videoClipModel}]
+        include:[
+          {
+            model:this.userGroupModel,
+            include: [
+              {
+                model:this.userModel,
+              },
+            ],
+          },
+          {
+            model:this.videoClipModel,
+          },
+          {
+            model:this.genreModel,
+          }
+      ]
       });
       return res.json(group);
     } catch (err) {

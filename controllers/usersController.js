@@ -163,12 +163,22 @@ class UsersController extends BaseController {
     return res.json({ success: true, data: token, id:user.id});
   }
 
+  /** Test Route - this pulls Tough Guy's data */
+  async testRoute(req, res) {
+    try {
+      const user = await this.model.findByPk(5);
+      return res.json({ success: true, user});
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
   /** User Methods */
   async getCurrentUser(req, res) {
     const userId = req.userId;
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user });
+      return res.json({ success: true, user, ownId:userId });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
@@ -393,6 +403,45 @@ class UsersController extends BaseController {
       const addNextUserToNewRoom = await createdRoom.addUser(secondUserId);
 
       return res.json({ success: true, data: [addUserToNewRoom, addNextUserToNewRoom]});
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
+
+//test route:
+//http://localhost:8080/users/createNewChatroomForMany
+
+//test body:
+// {
+//   "name": "foo",
+//   "description" : "bar",
+//   "genresPlayed" : "qux",
+//   "instrumentsWanted" : "quz",
+//   "memberIds" : {
+//     "1":"1",
+//     "2":"2",
+//     "3":"3"
+//   }
+// }
+  async createChatroomForManyUsers(req, res) {
+    const {memberIds, name, description, genresPlayed, instrumentsWanted } =req.body;
+    //memberIds is an object with format {1:userId1, 2:userId2, 3:userId3, ....}
+    //name can be anything but let's set it to be equal to the groupName
+    //the rest can just be inserted as "" - refer to StartChatButton.js
+
+    try {
+      const createdRoom = await this.chatroomModel.create({
+        name,
+        description,
+        genresPlayed,
+        instrumentsWanted,
+      });
+      console.log('we got here')
+      const memberIdArray = Object.values(memberIds)
+      console.log(memberIdArray)
+      const addAllUsersToNewRoom = await createdRoom.addUsers(memberIdArray)
+      
+      return res.json({ success: true, data: addAllUsersToNewRoom});
     } catch (err) {
       return res.status(400).json({ success: false, msg: err.message });
     }

@@ -2,10 +2,12 @@ const express = require("express");
 const router = express.Router();
 
 class ConnectionsRouter {
-  constructor(controller) {
+  constructor(controller, jwtAuth) {
     this.controller = controller;
+    this.jwtAuth = jwtAuth;
   }
   routes() {
+    router.use(this.jwtAuth.bind(this.jwtAuth));
     router.get("/:userId", (req, res) =>
       this.controller.getUsersConnections(req, res)
     );
