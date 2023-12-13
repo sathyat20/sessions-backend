@@ -43,7 +43,7 @@ class UsersRouter {
     );
 
     router.get("/:userId", this.controller.getOneUser.bind(this.controller));
-
+    router.get("/byName/:userName", this.controller.getUsersByName.bind(this.controller))
     router.post("/", this.controller.postOneUser.bind(this.controller));
     router.put("/:userId", this.controller.putOneUser.bind(this.controller));
 
