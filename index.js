@@ -70,7 +70,8 @@ const groupsController = new GroupsController(
   instrumentGroup,
   genre,
   instrument,
-  videoClip
+  videoClip,
+  notification
 );
 
 const artistsController = new ArtistsController(artist, userArtist);

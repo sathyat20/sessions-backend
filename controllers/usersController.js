@@ -216,7 +216,7 @@ class UsersController extends BaseController {
     const tablesToInclude = [{ // we want to include these tables
       model:this.instrumentModel,
     }]
-    const tablesNotToAdd = ['qualifications', 'musicianship', 'instruments']
+    const tablesNotToAdd = ['qualifications', 'musicianship', 'instruments', 'name']
     const whereObject = {} //at the same time we also need to generate the where clause
 
     //iterating through the unpacked selections and populating the query inputs
@@ -231,6 +231,8 @@ class UsersController extends BaseController {
       } else if (category === 'qualifications') {
         whereObject['$instruments.userInstrument.highest_qualification$'] = chosenValue;
         //
+      } else if (category === 'name') {
+        whereObject[`fullName`] = {[Op.substring]:chosenValue};
       } else {
         whereObject[`$${category}.name$`] = chosenValue 
       }
