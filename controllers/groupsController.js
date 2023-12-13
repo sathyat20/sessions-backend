@@ -1,4 +1,5 @@
 const BaseController = require("./baseController");
+const { Op } = require("sequelize");
 
 class GroupsController extends BaseController {
   constructor(
@@ -9,7 +10,8 @@ class GroupsController extends BaseController {
     instrumentGroupModel,
     genreModel,
     instrumentModel,
-    videoClipModel
+    videoClipModel,
+    notificationModel
   ) {
     super(model);
     this.userModel = userModel;
@@ -20,6 +22,7 @@ class GroupsController extends BaseController {
     this.genreModel = genreModel;
     this.instrumentModel = instrumentModel;
     this.videoClipModel = videoClipModel;
+    this.notificationModel = notificationModel;
   }
 
   // async getUserGroups(req, res) {
@@ -317,6 +320,8 @@ async getUserGroups(req, res) {
         whereObject[`careerStatus`] = chosenValue;
       } else if (category === 'ensemble_type') {
         whereObject[`${category}`] = chosenValue;
+      } else if (category === 'name') {
+        whereObject[`groupName`] = {[Op.substring]:chosenValue};
       } else {
         whereObject[`$${category}.name$`] = chosenValue 
       }
@@ -344,7 +349,18 @@ async getUserGroups(req, res) {
         groupId,
         isAdmin,
       });
-      return res.json({ success: true, newMember });
+      console.log('we got here')
+      const notification  = await this.notificationModel.create(
+        {
+            userId,
+            originTable:"usersGroups",
+            sourceId: req.userId,
+            action: "post",
+            details: groupId,
+            hasBeenViewed: false
+        }
+      )
+      return res.json({ success: true, newMember, notification });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
