@@ -155,6 +155,10 @@ class UsersRouter {
       "/:userId/instruments/",
       this.controller.assignInstruments.bind(this.controller)
     );
+    router.post(
+      "/createNewChatroomForMany",
+      this.controller.createChatroomForManyUsers.bind(this.controller)
+    );
 
     return router;
   }
