@@ -15,6 +15,8 @@ class UsersRouter {
       this.controller.jwtLogInUser.bind(this.controller)
     );
 
+    router.get("/testRoute", this.controller.testRoute.bind(this.controller))
+
     // JWT Auth Middleware
     router.use(this.jwtAuth.bind(this.jwtAuth));
 
@@ -71,6 +73,11 @@ class UsersRouter {
     router.post(
       "/createNewChatroomForTwo",
       this.controller.createChatroomForTwoUsers.bind(this.controller)
+    );
+
+    router.post(
+      "/createNewChatroomForMany",
+      this.controller.createChatroomForManyUsers.bind(this.controller)
     );
 
     //user video clip methods
