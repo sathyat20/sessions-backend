@@ -95,7 +95,7 @@ class UsersController extends BaseController {
 
     // Hash the Password so we don't save plaintext on client/don't send plain text over the internet
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     try {
       const newUser = await this.model.create({
         fullName: fullName,
@@ -158,7 +158,7 @@ class UsersController extends BaseController {
       expiresIn: "60mins",
     });
 
-    return res.json({ success: true, data: token, id:user.id});
+    return res.json({ success: true, data: token, id: user.id });
   }
 
   /** User Methods */
@@ -172,19 +172,29 @@ class UsersController extends BaseController {
     }
   }
 
-  async getFilteredUsers(req, res) {//filter by artists, instruments, genres
+  async getFilteredUsers(req, res) {
+    //filter by artists, instruments, genres
     const { category, option } = req.params; //option is case sensitive!
-    const inputArray = [{
-      model:this.instrumentModel,
-    }]
-    if (category !== 'instruments') {
-      inputArray.push(category)
+    const inputArray = [
+      {
+        model: this.instrumentModel,
+      },
+    ];
+    if (category !== "instruments") {
+      inputArray.push(category);
     }
     try {
-      const filteredUsers = await this.model.findAll({ 
+      const filteredUsers = await this.model.findAll({
         include: inputArray,
-        where: { [`$${category}.name$`]: option }, 
-        order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'instrumentExperience', 'DESC']]
+        where: { [`$${category}.name$`]: option },
+        order: [
+          [
+            { model: this.instrumentModel },
+            { model: this.userInstrumentModel },
+            "instrumentExperience",
+            "DESC",
+          ],
+        ],
       });
       return res.json({ success: true, filteredUsers });
     } catch (err) {
@@ -223,7 +233,7 @@ class UsersController extends BaseController {
   async putOneUser(req, res) {
     const { userId } = req.params;
     const { fullName, profilePictureUrl, bio, experience } = req.body;
-    console.log(req.body)
+    console.log(req.body);
     // if (!fullName && !profilePictureUrl && !bio && !experience) {
     //   res.status(400).json({ success: false, msg: "input error" });
     // }
@@ -306,17 +316,17 @@ class UsersController extends BaseController {
   }
 
   async createChatroomForTwoUsers(req, res) {
-    const {secondUserId, name, description, genresPlayed, instrumentsWanted } =
+    const { secondUserId, name, description, genresPlayed, instrumentsWanted } =
       req.body;
-    const userId= req.userId
+    const userId = req.userId;
 
     // if (!userId || !name) {
     //   return res.json({ success: false, msg: "requires a room name" });
     // }
 
     try {
-      const firstUser = await this.model.findByPk(userId)
-      console.log(firstUser.fullName)
+      const firstUser = await this.model.findByPk(userId);
+      console.log(firstUser.fullName);
       const createdRoom = await this.chatroomModel.create({
         name,
         description,
@@ -327,7 +337,10 @@ class UsersController extends BaseController {
       const addUserToNewRoom = await createdRoom.addUser(userId);
       const addNextUserToNewRoom = await createdRoom.addUser(secondUserId);
 
-      return res.json({ success: true, data: [addUserToNewRoom, addNextUserToNewRoom]});
+      return res.json({
+        success: true,
+        data: [addUserToNewRoom, addNextUserToNewRoom],
+      });
     } catch (err) {
       return res.status(400).json({ success: false, msg: err.message });
     }
@@ -353,7 +366,6 @@ class UsersController extends BaseController {
       return res.status(400).json({ success: false, msg: err.message });
     }
   }
-
 
   async addProfilePicture(req, res) {
     const { photoURL } = req.body;
@@ -486,14 +498,7 @@ class UsersController extends BaseController {
             },
           },
         ],
-        order: [
-          [
-            this.instrumentModel,
-            this.userInstrumentModel,
-            "id",
-            "DESC",
-          ],
-        ], // sort instruments in descending order by instrumentExp col of userInstrument model nested in Instrument model
+        order: [[this.instrumentModel, this.userInstrumentModel, "id", "DESC"]], // sort instruments in descending order by instrumentExp col of userInstrument model nested in Instrument model
         where: { id: userId }, // we want only instruments corresponding to the userId in req.params
         attributes: [], // we don't want any info from user model
       });
@@ -501,19 +506,19 @@ class UsersController extends BaseController {
       //console.log(playedInstrumentData)
       playedInstrumentData[0].instruments.forEach((instrument) => {
         //converting into array containing instrument: experience
-        console.log(instrument.userInstrument)
+        console.log(instrument.userInstrument);
         playedInstruments.push({
-          instrument:{
-            value:instrument.id,
-            label:instrument.name,
+          instrument: {
+            value: instrument.id,
+            label: instrument.name,
           },
           highestQualification: {
-            value: instrument.userInstrument.highestQualification, 
-            label: instrument.userInstrument.highestQualification
+            value: instrument.userInstrument.highestQualification,
+            label: instrument.userInstrument.highestQualification,
           },
-          qualificationInstitution: instrument.userInstrument.qualificationInstitution,
-        }
-        );
+          qualificationInstitution:
+            instrument.userInstrument.qualificationInstitution,
+        });
       });
       return res.json({ success: true, playedInstruments });
     } catch (err) {
@@ -610,28 +615,30 @@ class UsersController extends BaseController {
 
   async assignArtists(req, res) {
     const { userId } = req.params;
-    const { artistsList} = req.body;  
+    const { artistsList } = req.body;
     try {
       const listToSet = [];
       const listToCreate = [];
-      const allArtists = await this.artistModel.findAll();//getAll and check input vs getAll results
+      const allArtists = await this.artistModel.findAll(); //getAll and check input vs getAll results
       const artistNamesToIds = {};
       allArtists.forEach((artist) => {
-        artistNamesToIds[artist.name] = artist.id
-      })
+        artistNamesToIds[artist.name] = artist.id;
+      });
       artistsList.forEach((name) => {
         if (name in artistNamesToIds) {
-          listToSet.push(artistNamesToIds[name])//for those in the getAll results, get their id
+          listToSet.push(artistNamesToIds[name]); //for those in the getAll results, get their id
         } else {
-          listToCreate.push({ name })
+          listToCreate.push({ name });
         }
-      })
+      });
       //for those not in getAll results, bulkCreate(need to return ids);
-      const createdArtists = await this.artistModel.bulkCreate(listToCreate, { returning: true }) 
-      const createdIds = createdArtists.map((artist) => artist.dataValues.id)
-      const finalArtistIds = listToSet.concat(createdIds)
+      const createdArtists = await this.artistModel.bulkCreate(listToCreate, {
+        returning: true,
+      });
+      const createdIds = createdArtists.map((artist) => artist.dataValues.id);
+      const finalArtistIds = listToSet.concat(createdIds);
       const addingUser = await this.model.findByPk(userId);
-      const response = await addingUser.setArtists(finalArtistIds)
+      const response = await addingUser.setArtists(finalArtistIds);
       return res.json({ success: true, response });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
@@ -640,30 +647,32 @@ class UsersController extends BaseController {
 
   async assignGenres(req, res) {
     const { userId } = req.params;
-    const { genresList} = req.body;  
+    const { genresList } = req.body;
     try {
       const listToSet = [];
       const listToCreate = [];
-      const allGenres = await this.genreModel.findAll();//getAll and check input vs getAll results
+      const allGenres = await this.genreModel.findAll(); //getAll and check input vs getAll results
       const genreNamesToIds = {};
       allGenres.forEach((genre) => {
-        genreNamesToIds[genre.name] = genre.id
-      })
+        genreNamesToIds[genre.name] = genre.id;
+      });
       genresList.forEach((name) => {
         if (name in genreNamesToIds) {
-          listToSet.push(genreNamesToIds[name])//for those in the getAll results, get their id
+          listToSet.push(genreNamesToIds[name]); //for those in the getAll results, get their id
         } else {
-          listToCreate.push({ name })
+          listToCreate.push({ name });
         }
-      })
+      });
       //for those not in getAll results, bulkCreate(need to return ids);
-      const createdGenres = await this.genreModel.bulkCreate(listToCreate, { returning: true }) 
-      console.log(createdGenres)
-      const createdIds = createdGenres.map((genre) => genre.dataValues.id)
+      const createdGenres = await this.genreModel.bulkCreate(listToCreate, {
+        returning: true,
+      });
+      console.log(createdGenres);
+      const createdIds = createdGenres.map((genre) => genre.dataValues.id);
       //combine ids and setGenres
-      const finalGenreIds = listToSet.concat(createdIds)
+      const finalGenreIds = listToSet.concat(createdIds);
       const addingUser = await this.model.findByPk(userId);
-      const response = await addingUser.setGenres(finalGenreIds)
+      const response = await addingUser.setGenres(finalGenreIds);
       return res.json({ success: true, response });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
@@ -673,19 +682,51 @@ class UsersController extends BaseController {
   async assignInstruments(req, res) {
     const { userId } = req.params;
     const { userInstrumentsList } = req.body; // array of {instrument: {value: instrumentId, label: instrumentName},instrumentExperience: ""}
-    const userInstrumentObjs = userInstrumentsList.map((entry)=>{
-      return {userId, instrumentId: entry.instrument.value, instrumentExperience: entry.instrumentExperience}
-    }) 
+    const userInstrumentObjs = userInstrumentsList.map((entry) => {
+      return {
+        userId,
+        instrumentId: entry.instrument.value,
+        instrumentExperience: entry.instrumentExperience,
+      };
+    });
     try {
       await this.userInstrumentModel.destroy({
-        where: {userId},
+        where: { userId },
       });
-      const createdUserInstruments = await this.userInstrumentModel.bulkCreate(userInstrumentObjs, {returning: true})
+      const createdUserInstruments = await this.userInstrumentModel.bulkCreate(
+        userInstrumentObjs,
+        { returning: true }
+      );
       return res.json({ success: true, createdUserInstruments });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
-  } 
+  }
+
+  async createChatroomForManyUsers(req, res) {
+    const { memberIds, name, description, genresPlayed, instrumentsWanted } =
+      req.body;
+    //memberIds is an object with format {1:userId1, 2:userId2, 3:userId3, ....}
+    //name can be anything but let's set it to be equal to the groupName
+    //the rest can just be inserted as "" - refer to StartChatButton.js
+
+    try {
+      const createdRoom = await this.chatroomModel.create({
+        name,
+        description,
+        genresPlayed,
+        instrumentsWanted,
+      });
+      console.log("we got here");
+      const memberIdArray = Object.values(memberIds);
+      console.log(memberIdArray);
+      const addAllUsersToNewRoom = await createdRoom.addUsers(memberIdArray);
+
+      return res.json({ success: true, data: addAllUsersToNewRoom });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
 }
 
 
