@@ -79,7 +79,7 @@ class GroupsController extends BaseController {
   //   }
   // }
 
-  async getUserGroups(req, res) {
+async getUserGroups(req, res) {
     const userId = req.params.userId;
 
     try {
@@ -106,6 +106,12 @@ class GroupsController extends BaseController {
           {
             model: this.videoClipModel,
           },
+          {
+            model:this.genreModel,
+          }
+          // {
+          //   model:this.userGroupModel
+          // }
         ],
       });
 
@@ -114,6 +120,7 @@ class GroupsController extends BaseController {
       return res.status(400).json({ error: true, msg: err.message });
     }
   }
+
 
   async createGroup(req, res) {
     console.log("UserId from req: ", req.userId);
@@ -283,7 +290,104 @@ class GroupsController extends BaseController {
         isAdmin: ug.isAdmin, 
       }));
 
-      return res.status(200).json(members);
+      return res.status(200).json(members);} 
+      catch (err) {
+      return res.status(400).json({ error: true, msg: err.message });
+    }}
+
+  //http://localhost:8080/groups/search?genres=Classical
+  //http://localhost:8080/groups/search?ensemble_type=Jazz%20Band&genres=Jazz
+  async getMultiFilteredGroups(req, res) {
+    //pull the inputs from query params
+    const selectionsArray = Object.entries(req.query)
+    
+    //initialising the query inputs
+    const tablesToInclude = [{ // we want to include these tables
+      model:this.genreModel,
+    }]
+    const whereObject = {} //at the same time we also need to generate the where clause
+
+    //iterating through the unpacked selections and populating the query inputs
+    selectionsArray.forEach((selection)=>{ 
+      const category = selection[0];
+      console.log(category)
+      const chosenValue = selection[1];
+      if (category === 'musicianship') {
+        whereObject[`careerStatus`] = chosenValue;
+      } else if (category === 'ensemble_type') {
+        whereObject[`${category}`] = chosenValue;
+      } else {
+        whereObject[`$${category}.name$`] = chosenValue 
+      }
+    })
+
+    //actual query
+    try {
+      const results = await this.model.findAll({ 
+        include: tablesToInclude, // include all the tables listed in criteria
+        where: whereObject, //find all user entries matching selected category and option
+        // order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'instrumentExperience', 'DESC']]
+      });
+
+      return res.json({ success: true, results, userId:req.userId });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async addMember(req,res) {
+    const {groupId, userId, isAdmin} = req.body;
+    try {
+      const newMember = await this.userGroupModel.create({
+        userId,
+        groupId,
+        isAdmin,
+      });
+      return res.json({ success: true, newMember });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async removeMember(req,res) {
+    const { userId, groupId } = req.params;
+    try {
+      await this.userGroupModel.destroy({
+        where: {
+          userId,
+          groupId,
+        },
+      });
+      return res.json({ success: true });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  //router.get("/group/:groupId", this.controller.getGroup.bind(this.controller));
+async getGroup(req, res) {
+    const {groupId} = req.params;
+    try {
+      const group = await this.groupModel.findOne({
+        where: {id:groupId},
+        include:[
+          {
+            model:this.userGroupModel,
+            include: [
+              {
+                model:this.userModel,
+              },
+            ],
+          },
+          {
+            model:this.videoClipModel,
+          },
+          {
+            model:this.genreModel,
+          }
+      ]
+      });
+      return res.json(group);
     } catch (err) {
       return res.status(400).json({ error: true, msg: err.message });
     }

@@ -15,6 +15,8 @@ class UsersRouter {
       this.controller.jwtLogInUser.bind(this.controller)
     );
 
+    router.get("/testRoute", this.controller.testRoute.bind(this.controller))
+
     // JWT Auth Middleware
     router.use(this.jwtAuth.bind(this.jwtAuth));
 
@@ -43,7 +45,7 @@ class UsersRouter {
     );
 
     router.get("/:userId", this.controller.getOneUser.bind(this.controller));
-
+    router.get("/byName/:userName", this.controller.getUsersByName.bind(this.controller))
     router.post("/", this.controller.postOneUser.bind(this.controller));
     router.put("/:userId", this.controller.putOneUser.bind(this.controller));
 
@@ -73,13 +75,18 @@ class UsersRouter {
       this.controller.createChatroomForTwoUsers.bind(this.controller)
     );
 
+    router.post(
+      "/createNewChatroomForMany",
+      this.controller.createChatroomForManyUsers.bind(this.controller)
+    );
+
     //user video clip methods
     router.get(
       "/:userId/clips",
       this.controller.getAllClips.bind(this.controller)
     );
     router.post(
-      "/:userId/clips",
+      "/clips",
       this.controller.postClip.bind(this.controller)
     );
     router.put(
@@ -87,7 +94,7 @@ class UsersRouter {
       this.controller.putClip.bind(this.controller)
     );
     router.delete(
-      "/:userId/clips/:clipId",
+      "/clips/:clipId",
       this.controller.deleteClip.bind(this.controller)
     );
 

@@ -1,6 +1,8 @@
 const BaseController = require("./baseController");
 const bcrypt = require("bcrypt"); // hashing User inputs on Sign Up / Log In
 const jwt = require("jsonwebtoken");
+const { Op } = require("sequelize");
+
 require("dotenv").config();
 
 class UsersController extends BaseController {
@@ -161,12 +163,22 @@ class UsersController extends BaseController {
     return res.json({ success: true, data: token, id: user.id });
   }
 
+  /** Test Route - this pulls Tough Guy's data */
+  async testRoute(req, res) {
+    try {
+      const user = await this.model.findByPk(5);
+      return res.json({ success: true, user});
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
   /** User Methods */
   async getCurrentUser(req, res) {
     const userId = req.userId;
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user });
+      return res.json({ success: true, user, ownId:userId });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
@@ -201,12 +213,76 @@ class UsersController extends BaseController {
       return res.status(400).json({ error: true, msg: err });
     }
   }
+  //qualifications
+
+  //http://localhost:8080/users/search?instruments=Acoustic%20Guitar
+  //http://localhost:8080/users/search?instruments=Acoustic%20Guitar&genres=Classical
+  
+  async getMultiFilteredUsers(req, res) {
+    //pull the inputs from query params
+    const selectionsArray = Object.entries(req.query)
+   
+    //initialising the query inputs
+    const tablesToInclude = [{ // we want to include these tables
+      model:this.instrumentModel,
+    }]
+    const tablesNotToAdd = ['qualifications', 'musicianship', 'instruments']
+    const whereObject = {} //at the same time we also need to generate the where clause
+
+    //iterating through the unpacked selections and populating the query inputs
+    selectionsArray.forEach((selection)=>{ 
+      const category = selection[0];
+      const chosenValue = selection[1];
+      if (!tablesNotToAdd.includes(category)) { // if category isn't one of the 'don't add' tables
+        tablesToInclude.push(category) // note category must be exactly equal to table name)
+      }   
+      if (category === 'musicianship') {
+        whereObject[`careerStatus`] = chosenValue;
+      } else if (category === 'qualifications') {
+        whereObject['$instruments.userInstrument.highest_qualification$'] = chosenValue;
+        //
+      } else {
+        whereObject[`$${category}.name$`] = chosenValue 
+      }
+    })
+
+    //actual query
+    try {
+      const results = await this.model.findAll({ 
+        include: tablesToInclude, // include all the tables listed in criteria
+        where: whereObject, //find all user entries matching selected category and option
+        // order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'instrumentExperience', 'DESC']]
+      });
+
+      return res.json({ success: true, results, userId:req.userId });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
 
   async getOneUser(req, res) {
     const { userId } = req.params;
     try {
       const user = await this.model.findByPk(userId);
       return res.json({ success: true, user });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async getUsersByName(req, res) {
+    const { userName } = req.params;
+    console.log(userName)
+    try {
+      const users = await this.model.findAll({
+        where: {
+          fullName: {
+            [Op.startsWith]:userName
+          }
+        },
+      });
+      console.log(users)
+      return res.json({ success: true, users});
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
@@ -232,19 +308,18 @@ class UsersController extends BaseController {
 
   async putOneUser(req, res) {
     const { userId } = req.params;
-    const { fullName, profilePictureUrl, bio, experience } = req.body;
-    console.log(req.body);
-    // if (!fullName && !profilePictureUrl && !bio && !experience) {
-    //   res.status(400).json({ success: false, msg: "input error" });
-    // }
+    const { fullName, profilePictureUrl, bio, experience, careerStatus, email  } = req.body;
+    console.log(req.body)
+    console.log(userId)
     try {
       const editedUser = await this.model.update(
-        // updateObject,
         {
           fullName,
           profilePictureUrl,
           bio,
           experience,
+          careerStatus,
+          email
         },
         {
           where: { id: userId },
@@ -346,6 +421,45 @@ class UsersController extends BaseController {
     }
   }
 
+//test route:
+//http://localhost:8080/users/createNewChatroomForMany
+
+//test body:
+// {
+//   "name": "foo",
+//   "description" : "bar",
+//   "genresPlayed" : "qux",
+//   "instrumentsWanted" : "quz",
+//   "memberIds" : {
+//     "1":"1",
+//     "2":"2",
+//     "3":"3"
+//   }
+// }
+  async createChatroomForManyUsers(req, res) {
+    const {memberIds, name, description, genresPlayed, instrumentsWanted } =req.body;
+    //memberIds is an object with format {1:userId1, 2:userId2, 3:userId3, ....}
+    //name can be anything but let's set it to be equal to the groupName
+    //the rest can just be inserted as "" - refer to StartChatButton.js
+
+    try {
+      const createdRoom = await this.chatroomModel.create({
+        name,
+        description,
+        genresPlayed,
+        instrumentsWanted,
+      });
+      console.log('we got here')
+      const memberIdArray = Object.values(memberIds)
+      console.log(memberIdArray)
+      const addAllUsersToNewRoom = await createdRoom.addUsers(memberIdArray)
+      
+      return res.json({ success: true, data: addAllUsersToNewRoom});
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
+
   async postMessageAttachment(req, res) {
     const { mediaURL, messageId, chatroomId, fileType } = req.body;
 
@@ -370,7 +484,6 @@ class UsersController extends BaseController {
   async addProfilePicture(req, res) {
     const { photoURL } = req.body;
     let userId = req.userId; // from Middleware
-
     try {
       const addToUser = await this.model.findByPk(userId);
       const addProfilePic = await addToUser.update({
@@ -389,6 +502,7 @@ class UsersController extends BaseController {
       const output = await this.videoClipModel.findAll({
         where: { userId },
         order: [["createdAt", "DESC"]],
+        attributes:["id", "createdAt", "updatedAt", "hostUrl", "userId", "groupId"]
       });
       return res.json(output);
     } catch (err) {
@@ -397,12 +511,16 @@ class UsersController extends BaseController {
   }
 
   async postClip(req, res) {
-    const { userId } = req.params;
+    const userId  = req.userId;
     const { hostUrl } = req.body;
+    console.log('running')
     try {
-      const newClip = await this.model.createvideoClip(
-        { hostUrl },
-        { where: { id: userId } }
+      const newClip = await this.videoClipModel.create(
+        { 
+        userId,
+        groupId:null,
+        hostUrl:hostUrl   
+      }
       );
       return res.json({ success: true, newClip });
     } catch (err) {
@@ -431,7 +549,9 @@ class UsersController extends BaseController {
   }
 
   async deleteClip(req, res) {
-    const { userId, clipId } = req.params;
+    const { clipId } = req.params;
+    const userId  = req.userId;
+    console.log('something')
     try {
       await this.videoClipModel.destroy({
         where: {

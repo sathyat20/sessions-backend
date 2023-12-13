@@ -6,7 +6,6 @@ module.exports = (sequelize, DataTypes) => {
       // define association here as further models are added
       // User.hasMany(models.videoClip);
       User.belongsToMany(models.artist, {
-        as: "Artists",
         through: "users_artists",
       });
       User.belongsToMany(models.genre, {
@@ -30,9 +29,9 @@ module.exports = (sequelize, DataTypes) => {
         through: "users_chatrooms",
       });
       User.belongsToMany(models.group, {
-        through: models.userGroup,
+        through: "userGroup",
         // foreignKey: "userId",
-        // as: "Groups",
+        as: "Groups",
       });
       User.hasMany(models.videoClip, {
         foreignKey: "userId",
@@ -41,7 +40,6 @@ module.exports = (sequelize, DataTypes) => {
       //   through: models.videoClip,
       //   foreignKey: "userId",
       // });
-      
     }
   }
   User.init(

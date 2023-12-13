@@ -10,10 +10,10 @@ module.exports = (sequelize, DataTypes) => {
         // as: "Users",
       });
 
-      Group.belongsToMany(models.genreGroup, {
-        through: "genres_groups",
-        foreignKey: "groupId",
-        as: "genreGroupId",
+      Group.belongsToMany(models.genre, {
+        through: models.genreGroup,
+        // foreignKey: "groupId",
+        // as: "genreGroupId",
       });
 
       Group.belongsToMany(models.instrumentGroup, {
