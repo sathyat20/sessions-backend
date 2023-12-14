@@ -10,15 +10,6 @@ primary_region = "sin"
 
 [deploy]
   release_command = "sh ./release.sh"
-  
-[env]
-  PORT = "3000"
-  USERNAME = "postgres"
-  PASSWORD = "wMw3nZZsnHVx3Zv"
-  DATABASE = "sessions-backend-db"
-  HOST = "sessions-backend-db.internal"
-  DIALECT = "postgres"
-  NODE_ENV = "production"
 
 [http_service]
   internal_port = 3000

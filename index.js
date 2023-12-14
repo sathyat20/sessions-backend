@@ -112,7 +112,7 @@ const notificationsRouter = new NotificationsRouter(notificationsController, jwt
 
 // Enable CORS access to this server
 const corsOptions = {
-  origin: ["http://localhost:3000", ""],
+  origin: ["http://localhost:3000", "https://sessionsv2.netlify.app"],
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
