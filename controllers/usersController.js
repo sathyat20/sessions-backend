@@ -97,16 +97,18 @@ class UsersController extends BaseController {
 
     // Hash the Password so we don't save plaintext on client/don't send plain text over the internet
     const hashedPassword = await bcrypt.hash(password, 10);
-
+    
     try {
       const newUser = await this.model.create({
         fullName: fullName,
         password: hashedPassword,
         profilePictureUrl: "",
         bio: "",
-        experience: "",
+        experience: null,
+        career_status:"",
+        email:""
       });
-
+      console.log('we got here')
       // For JWT auth, we return a JWT rather than a JSON (in basic signin)
       const payload = {
         id: newUser.id,
@@ -264,9 +266,10 @@ class UsersController extends BaseController {
 
   async getOneUser(req, res) {
     const { userId } = req.params;
+    const ownId = req.userId;
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user });
+      return res.json({ success: true, user, ownId });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
@@ -809,10 +812,12 @@ class UsersController extends BaseController {
     const { userId } = req.params;
     const { userInstrumentsList } = req.body; // array of {instrument: {value: instrumentId, label: instrumentName},instrumentExperience: ""}
     const userInstrumentObjs = userInstrumentsList.map((entry) => {
+      console.log(entry)
       return {
         userId,
         instrumentId: entry.instrument.value,
-        instrumentExperience: entry.instrumentExperience,
+        highestQualification: entry.highestQualification.value,
+        qualificationInstitution: entry.qualificationInstitution
       };
     });
     try {

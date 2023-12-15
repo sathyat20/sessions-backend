@@ -2,7 +2,7 @@ const cors = require("cors");
 const express = require("express");
 require("dotenv").config();
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT||3000;
 
 // Import Auth Middleware
 const jwtAuth = require("./middlewares/jwtAuth");
@@ -112,10 +112,10 @@ const notificationsRouter = new NotificationsRouter(notificationsController, jwt
 
 // Enable CORS access to this server
 const corsOptions = {
-  origin: ["http://localhost:3000",'https://main--sessions-music.netlify.app'],
+  origin: ["http://localhost:3000", "https://sessionsv2.netlify.app"],
   optionsSuccessStatus: 200,
 };
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
