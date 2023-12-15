@@ -1,12 +1,14 @@
 const BaseController = require("./baseController");
 const bcrypt = require("bcrypt"); // hashing User inputs on Sign Up / Log In
 const jwt = require("jsonwebtoken");
+const { Op } = require("sequelize");
+
 require("dotenv").config();
 
 class UsersController extends BaseController {
   constructor(
     model,
-    personalVideoClipModel,
+    videoClipModel,
     artistModel,
     genreModel,
     instrumentModel,
@@ -18,7 +20,7 @@ class UsersController extends BaseController {
     super(model);
     this.chatroomModel = chatroomModel;
     this.chatroomMessageModel = chatroomMessageModel;
-    this.personalVideoClipModel = personalVideoClipModel;
+    this.videoClipModel = videoClipModel;
     this.artistModel = artistModel;
     this.genreModel = genreModel;
     this.instrumentModel = instrumentModel;
@@ -102,9 +104,11 @@ class UsersController extends BaseController {
         password: hashedPassword,
         profilePictureUrl: "",
         bio: "",
-        experience: "",
+        experience: null,
+        career_status:"",
+        email:""
       });
-
+      console.log('we got here')
       // For JWT auth, we return a JWT rather than a JSON (in basic signin)
       const payload = {
         id: newUser.id,
@@ -158,7 +162,17 @@ class UsersController extends BaseController {
       expiresIn: "60mins",
     });
 
-    return res.json({ success: true, data: token });
+    return res.json({ success: true, data: token, id: user.id });
+  }
+
+  /** Test Route - this pulls Tough Guy's data */
+  async testRoute(req, res) {
+    try {
+      const user = await this.model.findByPk(5);
+      return res.json({ success: true, user});
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
   }
 
   /** User Methods */
@@ -166,35 +180,85 @@ class UsersController extends BaseController {
     const userId = req.userId;
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user });
+      return res.json({ success: true, user, ownId:userId });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
   }
 
-
-  // Article.findAll({
-  //   include: ['comments'],
-  //   where: {
-  //     '$comments.id$': { [Op.eq]: null }
-  //   },
-  // });
-
-  async getFilteredUsers(req, res) {//filter by artists, instruments, genres
+  async getFilteredUsers(req, res) {
+    //filter by artists, instruments, genres
     const { category, option } = req.params; //option is case sensitive!
-    const inputArray = [{
-      model:this.instrumentModel,
-    }]
-    if (category !== 'instruments') {
-      inputArray.push(category)
+    const inputArray = [
+      {
+        model: this.instrumentModel,
+      },
+    ];
+    if (category !== "instruments") {
+      inputArray.push(category);
     }
     try {
-      const filteredUsers = await this.model.findAll({ 
+      const filteredUsers = await this.model.findAll({
         include: inputArray,
-        where: { [`$${category}.name$`]: option }, 
-        order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'instrumentExperience', 'DESC']]
+        where: { [`$${category}.name$`]: option },
+        order: [
+          [
+            { model: this.instrumentModel },
+            { model: this.userInstrumentModel },
+            "instrumentExperience",
+            "DESC",
+          ],
+        ],
       });
       return res.json({ success: true, filteredUsers });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+  //qualifications
+
+  //http://localhost:8080/users/search?instruments=Acoustic%20Guitar
+  //http://localhost:8080/users/search?instruments=Acoustic%20Guitar&genres=Classical
+  
+  async getMultiFilteredUsers(req, res) {
+    //pull the inputs from query params
+    const selectionsArray = Object.entries(req.query)
+   
+    //initialising the query inputs
+    const tablesToInclude = [{ // we want to include these tables
+      model:this.instrumentModel,
+    }]
+    const tablesNotToAdd = ['qualifications', 'musicianship', 'instruments', 'name']
+    const whereObject = {} //at the same time we also need to generate the where clause
+
+    //iterating through the unpacked selections and populating the query inputs
+    selectionsArray.forEach((selection)=>{ 
+      const category = selection[0];
+      const chosenValue = selection[1];
+      if (!tablesNotToAdd.includes(category)) { // if category isn't one of the 'don't add' tables
+        tablesToInclude.push(category) // note category must be exactly equal to table name)
+      }   
+      if (category === 'musicianship') {
+        whereObject[`careerStatus`] = chosenValue;
+      } else if (category === 'qualifications') {
+        whereObject['$instruments.userInstrument.highest_qualification$'] = chosenValue;
+        //
+      } else if (category === 'name') {
+        whereObject[`fullName`] = {[Op.substring]:chosenValue};
+      } else {
+        whereObject[`$${category}.name$`] = chosenValue 
+      }
+    })
+
+    //actual query
+    try {
+      const results = await this.model.findAll({ 
+        include: tablesToInclude, // include all the tables listed in criteria
+        where: whereObject, //find all user entries matching selected category and option
+        // order:[[{model:this.instrumentModel},{model:this.userInstrumentModel}, 'instrumentExperience', 'DESC']]
+      });
+
+      return res.json({ success: true, results, userId:req.userId });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
@@ -202,9 +266,28 @@ class UsersController extends BaseController {
 
   async getOneUser(req, res) {
     const { userId } = req.params;
+    const ownId = req.userId;
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user });
+      return res.json({ success: true, user, ownId });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async getUsersByName(req, res) {
+    const { userName } = req.params;
+    console.log(userName)
+    try {
+      const users = await this.model.findAll({
+        where: {
+          fullName: {
+            [Op.startsWith]:userName
+          }
+        },
+      });
+      console.log(users)
+      return res.json({ success: true, users});
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
@@ -230,19 +313,22 @@ class UsersController extends BaseController {
 
   async putOneUser(req, res) {
     const { userId } = req.params;
-    const { fullName, profilePictureUrl, bio, experience } = req.body;
-    console.log(req.body)
     // if (!fullName && !profilePictureUrl && !bio && !experience) {
     //   res.status(400).json({ success: false, msg: "input error" });
     // }
+    const { fullName, profilePictureUrl, bio, experience, careerStatus, email  } = req.body;
+    console.log(req.body)
+    console.log(userId)
+
     try {
       const editedUser = await this.model.update(
-        // updateObject,
         {
           fullName,
           profilePictureUrl,
           bio,
           experience,
+          careerStatus,
+          email
         },
         {
           where: { id: userId },
@@ -314,17 +400,17 @@ class UsersController extends BaseController {
   }
 
   async createChatroomForTwoUsers(req, res) {
-    const {secondUserId, name, description, genresPlayed, instrumentsWanted } =
+    const { secondUserId, name, description, genresPlayed, instrumentsWanted } =
       req.body;
-    const userId= req.userId
+    const userId = req.userId;
 
     // if (!userId || !name) {
     //   return res.json({ success: false, msg: "requires a room name" });
     // }
 
     try {
-      const firstUser = await this.model.findByPk(userId)
-      console.log(firstUser.fullName)
+      const firstUser = await this.model.findByPk(userId);
+      console.log(firstUser.fullName);
       const createdRoom = await this.chatroomModel.create({
         name,
         description,
@@ -335,7 +421,49 @@ class UsersController extends BaseController {
       const addUserToNewRoom = await createdRoom.addUser(userId);
       const addNextUserToNewRoom = await createdRoom.addUser(secondUserId);
 
-      return res.json({ success: true, data: [addUserToNewRoom, addNextUserToNewRoom]});
+      return res.json({
+        success: true,
+        data: [addUserToNewRoom, addNextUserToNewRoom],
+      });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
+
+//test route:
+//http://localhost:8080/users/createNewChatroomForMany
+
+//test body:
+// {
+//   "name": "foo",
+//   "description" : "bar",
+//   "genresPlayed" : "qux",
+//   "instrumentsWanted" : "quz",
+//   "memberIds" : {
+//     "1":"1",
+//     "2":"2",
+//     "3":"3"
+//   }
+// }
+  async createChatroomForManyUsers(req, res) {
+    const {memberIds, name, description, genresPlayed, instrumentsWanted } =req.body;
+    //memberIds is an object with format {1:userId1, 2:userId2, 3:userId3, ....}
+    //name can be anything but let's set it to be equal to the groupName
+    //the rest can just be inserted as "" - refer to StartChatButton.js
+
+    try {
+      const createdRoom = await this.chatroomModel.create({
+        name,
+        description,
+        genresPlayed,
+        instrumentsWanted,
+      });
+      console.log('we got here')
+      const memberIdArray = Object.values(memberIds)
+      console.log(memberIdArray)
+      const addAllUsersToNewRoom = await createdRoom.addUsers(memberIdArray)
+      
+      return res.json({ success: true, data: addAllUsersToNewRoom});
     } catch (err) {
       return res.status(400).json({ success: false, msg: err.message });
     }
@@ -362,15 +490,9 @@ class UsersController extends BaseController {
     }
   }
 
-  //need method to add videoclip and change associated videoclips
-  //when editing user, all videoclips will be pulled and displayed? Better not...keep it as a separate method
-  //add videoclip button
-  //edit videoclip and delete buttons
-
   async addProfilePicture(req, res) {
     const { photoURL } = req.body;
     let userId = req.userId; // from Middleware
-
     try {
       const addToUser = await this.model.findByPk(userId);
       const addProfilePic = await addToUser.update({
@@ -386,9 +508,10 @@ class UsersController extends BaseController {
   async getAllClips(req, res) {
     const { userId } = req.params;
     try {
-      const comments = await this.personalVideoClipModel.findAll({
+      const output = await this.videoClipModel.findAll({
         where: { userId },
-        order: ["createdAt"],
+        order: [["createdAt", "DESC"]],
+        attributes:["id", "createdAt", "updatedAt", "hostUrl", "userId", "groupId"]
       });
       return res.json(output);
     } catch (err) {
@@ -397,12 +520,16 @@ class UsersController extends BaseController {
   }
 
   async postClip(req, res) {
-    const { userId } = req.params;
+    const userId  = req.userId;
     const { hostUrl } = req.body;
+    console.log('running')
     try {
-      const newClip = await this.model.createPersonalVideoClip(
-        { hostUrl },
-        { where: { id: userId } }
+      const newClip = await this.videoClipModel.create(
+        { 
+        userId,
+        groupId:null,
+        hostUrl:hostUrl   
+      }
       );
       return res.json({ success: true, newClip });
     } catch (err) {
@@ -414,7 +541,7 @@ class UsersController extends BaseController {
     const { userId, clipId } = req.params;
     const { hostUrl } = req.body;
     try {
-      const editedClip = await this.personalVideoClipModel.update(
+      const editedClip = await this.videoClipModel.update(
         { hostUrl },
         {
           where: {
@@ -431,9 +558,11 @@ class UsersController extends BaseController {
   }
 
   async deleteClip(req, res) {
-    const { userId, clipId } = req.params;
+    const { clipId } = req.params;
+    const userId  = req.userId;
+    console.log('something')
     try {
-      await this.personalVideoClipModel.destroy({
+      await this.videoClipModel.destroy({
         where: {
           userId,
           id: clipId,
@@ -494,32 +623,31 @@ class UsersController extends BaseController {
             attributes: ["id", "name"], //we only want name from instrument model
             through: {
               model: this.userInstrumentModel,
-              attributes: ["instrumentExperience"], //specify we only want instrumentExperience from userInstrument models
+              attributes: ["highestQualification", "qualificationInstitution"], //specify we only want instrumentExperience from userInstrument models
             },
           },
         ],
-        order: [
-          [
-            this.instrumentModel,
-            this.userInstrumentModel,
-            "instrumentExperience",
-            "DESC",
-          ],
-        ], // sort instruments in descending order by instrumentExp col of userInstrument model nested in Instrument model
+        order: [[this.instrumentModel, this.userInstrumentModel, "id", "DESC"]], // sort instruments in descending order by instrumentExp col of userInstrument model nested in Instrument model
         where: { id: userId }, // we want only instruments corresponding to the userId in req.params
         attributes: [], // we don't want any info from user model
       });
       const playedInstruments = [];
+      //console.log(playedInstrumentData)
       playedInstrumentData[0].instruments.forEach((instrument) => {
         //converting into array containing instrument: experience
+        console.log(instrument.userInstrument);
         playedInstruments.push({
-          instrument:{
-            value:instrument.id,
-            label:instrument.name,
+          instrument: {
+            value: instrument.id,
+            label: instrument.name,
           },
-          instrumentExperience: instrument.userInstrument.instrumentExperience,
-        }
-        );
+          highestQualification: {
+            value: instrument.userInstrument.highestQualification,
+            label: instrument.userInstrument.highestQualification,
+          },
+          qualificationInstitution:
+            instrument.userInstrument.qualificationInstitution,
+        });
       });
       return res.json({ success: true, playedInstruments });
     } catch (err) {
@@ -616,28 +744,30 @@ class UsersController extends BaseController {
 
   async assignArtists(req, res) {
     const { userId } = req.params;
-    const { artistsList} = req.body;  
+    const { artistsList } = req.body;
     try {
       const listToSet = [];
       const listToCreate = [];
-      const allArtists = await this.artistModel.findAll();//getAll and check input vs getAll results
+      const allArtists = await this.artistModel.findAll(); //getAll and check input vs getAll results
       const artistNamesToIds = {};
       allArtists.forEach((artist) => {
-        artistNamesToIds[artist.name] = artist.id
-      })
+        artistNamesToIds[artist.name] = artist.id;
+      });
       artistsList.forEach((name) => {
         if (name in artistNamesToIds) {
-          listToSet.push(artistNamesToIds[name])//for those in the getAll results, get their id
+          listToSet.push(artistNamesToIds[name]); //for those in the getAll results, get their id
         } else {
-          listToCreate.push({ name })
+          listToCreate.push({ name });
         }
-      })
+      });
       //for those not in getAll results, bulkCreate(need to return ids);
-      const createdArtists = await this.artistModel.bulkCreate(listToCreate, { returning: true }) 
-      const createdIds = createdArtists.map((artist) => artist.dataValues.id)
-      const finalArtistIds = listToSet.concat(createdIds)
+      const createdArtists = await this.artistModel.bulkCreate(listToCreate, {
+        returning: true,
+      });
+      const createdIds = createdArtists.map((artist) => artist.dataValues.id);
+      const finalArtistIds = listToSet.concat(createdIds);
       const addingUser = await this.model.findByPk(userId);
-      const response = await addingUser.setArtists(finalArtistIds)
+      const response = await addingUser.setArtists(finalArtistIds);
       return res.json({ success: true, response });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
@@ -646,30 +776,32 @@ class UsersController extends BaseController {
 
   async assignGenres(req, res) {
     const { userId } = req.params;
-    const { genresList} = req.body;  
+    const { genresList } = req.body;
     try {
       const listToSet = [];
       const listToCreate = [];
-      const allGenres = await this.genreModel.findAll();//getAll and check input vs getAll results
+      const allGenres = await this.genreModel.findAll(); //getAll and check input vs getAll results
       const genreNamesToIds = {};
       allGenres.forEach((genre) => {
-        genreNamesToIds[genre.name] = genre.id
-      })
+        genreNamesToIds[genre.name] = genre.id;
+      });
       genresList.forEach((name) => {
         if (name in genreNamesToIds) {
-          listToSet.push(genreNamesToIds[name])//for those in the getAll results, get their id
+          listToSet.push(genreNamesToIds[name]); //for those in the getAll results, get their id
         } else {
-          listToCreate.push({ name })
+          listToCreate.push({ name });
         }
-      })
+      });
       //for those not in getAll results, bulkCreate(need to return ids);
-      const createdGenres = await this.genreModel.bulkCreate(listToCreate, { returning: true }) 
-      console.log(createdGenres)
-      const createdIds = createdGenres.map((genre) => genre.dataValues.id)
+      const createdGenres = await this.genreModel.bulkCreate(listToCreate, {
+        returning: true,
+      });
+      console.log(createdGenres);
+      const createdIds = createdGenres.map((genre) => genre.dataValues.id);
       //combine ids and setGenres
-      const finalGenreIds = listToSet.concat(createdIds)
+      const finalGenreIds = listToSet.concat(createdIds);
       const addingUser = await this.model.findByPk(userId);
-      const response = await addingUser.setGenres(finalGenreIds)
+      const response = await addingUser.setGenres(finalGenreIds);
       return res.json({ success: true, response });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
@@ -679,19 +811,53 @@ class UsersController extends BaseController {
   async assignInstruments(req, res) {
     const { userId } = req.params;
     const { userInstrumentsList } = req.body; // array of {instrument: {value: instrumentId, label: instrumentName},instrumentExperience: ""}
-    const userInstrumentObjs = userInstrumentsList.map((entry)=>{
-      return {userId, instrumentId: entry.instrument.value, instrumentExperience: entry.instrumentExperience}
-    }) 
+    const userInstrumentObjs = userInstrumentsList.map((entry) => {
+      console.log(entry)
+      return {
+        userId,
+        instrumentId: entry.instrument.value,
+        highestQualification: entry.highestQualification.value,
+        qualificationInstitution: entry.qualificationInstitution
+      };
+    });
     try {
       await this.userInstrumentModel.destroy({
-        where: {userId},
+        where: { userId },
       });
-      const createdUserInstruments = await this.userInstrumentModel.bulkCreate(userInstrumentObjs, {returning: true})
+      const createdUserInstruments = await this.userInstrumentModel.bulkCreate(
+        userInstrumentObjs,
+        { returning: true }
+      );
       return res.json({ success: true, createdUserInstruments });
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
-  } 
+  }
+
+  async createChatroomForManyUsers(req, res) {
+    const { memberIds, name, description, genresPlayed, instrumentsWanted } =
+      req.body;
+    //memberIds is an object with format {1:userId1, 2:userId2, 3:userId3, ....}
+    //name can be anything but let's set it to be equal to the groupName
+    //the rest can just be inserted as "" - refer to StartChatButton.js
+
+    try {
+      const createdRoom = await this.chatroomModel.create({
+        name,
+        description,
+        genresPlayed,
+        instrumentsWanted,
+      });
+      console.log("we got here");
+      const memberIdArray = Object.values(memberIds);
+      console.log(memberIdArray);
+      const addAllUsersToNewRoom = await createdRoom.addUsers(memberIdArray);
+
+      return res.json({ success: true, data: addAllUsersToNewRoom });
+    } catch (err) {
+      return res.status(400).json({ success: false, msg: err.message });
+    }
+  }
 }
 
 

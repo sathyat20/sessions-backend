@@ -4,11 +4,11 @@ require("dotenv").config();
 const jwtAuth = (req, res, next) => {
   try {
     // console.log("middleware testing");
-    // console.log("header with auth: ", req.headers.authorization);
+    console.log("header with auth: ", req.headers.authorization);
     // console.log("header: ", req.headers);
     const token = req.headers.authorization.split(" ")[1];
     // const token = req.headers.authorization;
-    // console.log("middleware token:", token);
+    console.log("middleware token:", token);
 
     const verifiedToken = jwt.verify(
       token,
@@ -21,6 +21,8 @@ const jwtAuth = (req, res, next) => {
 
     next();
   } catch (err) {
+    console.log("something else");
+    console.log(err)
     return res
       .status(403)
       .json({ success: false, data: err.message, msg: "invalid token" });

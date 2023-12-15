@@ -9,7 +9,7 @@ module.exports = {
         defaultValue:'-',
         type: Sequelize.STRING
       }),
-      queryInterface.addColumn('personal_video_clips', 'index', {
+      queryInterface.addColumn('video_clips', 'index', {
         allowNull: false,
         defaultValue:'-',
         type: Sequelize.STRING
@@ -20,7 +20,7 @@ module.exports = {
   async down (queryInterface, Sequelize) {
     await Promise.all([
       queryInterface.removeColumn('attachments', 'index', {}),
-      queryInterface.removeColumn('personal_video_clips', 'index', {}),
+      queryInterface.removeColumn('video_clips', 'index', {}),
     ])
   }
 };

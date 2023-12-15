@@ -5,12 +5,17 @@ module.exports = (sequelize, DataTypes) => {
 
     static associate(models) {
       // define association here as further models are added
-      Genre.belongsToMany(models.user, {through:'users_genres'})
-          }
+      Genre.belongsToMany(models.user, { through: 'users_genres' })
+      Genre.belongsToMany(models.group, {
+        through: models.genreGroup,
+        // foreignKey: "genreId",
+        // as: "genreGroupId",
+      });
+    }
   }
-    Genre.init(
-        {
-            name: {
+  Genre.init(
+    {
+      name: {
                 type:DataTypes.STRING,
                 allowNull:false,
             }

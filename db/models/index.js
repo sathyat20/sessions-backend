@@ -11,6 +11,7 @@ const db = {};
 
 let sequelize;
 
+require('dotenv').config()
 if (process.env.DATABASE_URL) {
   sequelize = new Sequelize(
   process.env.DATABASE,

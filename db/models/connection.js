@@ -1,15 +1,16 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class UserInstrument extends Model {
+  class Connection extends Model {
 
     static associate(models) {
-      // define association here as further models are added
+        Connection.belongsTo(models.user, { as: 'requesterRelation', foreignKey:'requesterId'})
+        Connection.belongsTo(models.user, { as: 'requestedRelation', foreignKey:'requestedId'})
           }
   }
-    UserInstrument.init(
+    Connection.init(
         {
-            userId: {
+            requesterId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
@@ -17,27 +18,25 @@ module.exports = (sequelize, DataTypes) => {
                     key: 'id',
                 }
             },
-            instrumentId: {
+            requestedId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'instrument',
+                    model: 'user',
                     key: 'id',
                 }
             },
-            highestQualification: {
+            status: {
                 type: DataTypes.STRING,
-              },
-            qualificationInstitution: {
-                type: DataTypes.STRING,
+                allowNull: false,
               },
         },
         {
             sequelize,
-            modelName: "userInstrument",
+            modelName: "connection",
             underscored: true,
-            tableName: "users_instruments"
+            tableName: "connections"
         }
   );
-  return UserInstrument;
+  return Connection;
 };
