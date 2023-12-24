@@ -14,6 +14,14 @@ class UsersRouter {
       "/jwtLogIn",
       this.controller.jwtLogInUser.bind(this.controller)
     );
+    router.post(
+      "/jwtRefresh",
+      this.controller.jwtRefresh.bind(this.controller)
+    );
+    router.put(
+      "/jwtLogOut",
+      this.controller.jwtLogOut.bind(this.controller)
+    );
 
     router.get("/testRoute", this.controller.testRoute.bind(this.controller))
 

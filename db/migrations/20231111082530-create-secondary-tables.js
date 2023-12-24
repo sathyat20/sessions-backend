@@ -426,6 +426,45 @@ module.exports = {
           type: Sequelize.DATE,
         },
       }),
+
+      queryInterface.createTable("sessions", {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: Sequelize.INTEGER,
+        },
+        user_id: {
+          allowNull: false,
+          type: Sequelize.INTEGER,
+          references: {
+            model: "users",
+            key: "id",
+          },
+        },
+        current_token: {
+          allowNull: false,
+          type: Sequelize.STRING,
+        },
+        current_refresh: {
+          allowNull: false,
+          type: Sequelize.STRING,
+        },
+        is_valid: {
+          allowNull: false,
+          type: Sequelize.BOOLEAN,
+        },
+        created_at: {
+          allowNull: false,
+          type: Sequelize.DATE,
+        },
+        updated_at: {
+          allowNull: false,
+          type: Sequelize.DATE,
+        },
+      }),
+
+
     ]);
   },
 

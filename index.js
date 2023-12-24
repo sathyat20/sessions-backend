@@ -46,7 +46,8 @@ const {
   userGroup,
   genreGroup,
   instrumentGroup, 
-  notification
+  notification,
+  session
 } = db;
 
 // initializing Controllers -> note the lowercase for the first word
@@ -59,7 +60,8 @@ const usersController = new UsersController(
   userInstrument,
   chatroom,
   userChatroomMessage,
-  attachment
+  attachment,
+  session
 );
 
 const groupsController = new GroupsController(

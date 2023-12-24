@@ -15,7 +15,8 @@ class UsersController extends BaseController {
     userInstrumentModel,
     chatroomModel,
     chatroomMessageModel,
-    attachmentModel
+    attachmentModel,
+    sessionModel
   ) {
     super(model);
     this.chatroomModel = chatroomModel;
@@ -26,6 +27,7 @@ class UsersController extends BaseController {
     this.instrumentModel = instrumentModel;
     this.userInstrumentModel = userInstrumentModel;
     this.attachmentModel = attachmentModel;
+    this.sessionModel = sessionModel;
   }
 
   /** Basic Auth */
@@ -116,9 +118,21 @@ class UsersController extends BaseController {
       };
 
       const token = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET_KEY, {
-        expiresIn: "5mins",
+        expiresIn: 900,
       });
-      return res.json({ success: true, data: token });
+
+      const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN_SECRET_KEY, {
+        expiresIn: "3 days"
+      });
+
+      await this.sessionModel.create({
+        userId:user.id,
+        currentToken: token,
+        currentRefresh: refreshToken,
+        isValid:true
+      });
+
+      return res.json({ success: true, data: token, refresh:refreshToken });
     } catch (err) {
       return res.status(400).json({ success: false, data: err.message });
     }
@@ -159,10 +173,135 @@ class UsersController extends BaseController {
     };
 
     const token = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET_KEY, {
-      expiresIn: "60mins",
+      expiresIn: 900,
     });
 
-    return res.json({ success: true, data: token, id: user.id });
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN_SECRET_KEY, {
+      expiresIn: "3 days"
+    });
+
+    await this.sessionModel.create({
+      userId:user.id,
+      currentToken: token,
+      currentRefresh: refreshToken,
+      isValid:true
+    });
+
+    return res.json({ success: true, data: token, refresh: refreshToken, id: user.id });
+  }
+
+  async jwtRefresh(req, res) {
+    const { accessToken, refreshToken } = req.body;
+    console.log(refreshToken)
+
+    const access = accessToken.split(" ")[1]
+    const refresh = refreshToken.split(" ")[1]
+    console.log(refresh)
+    //check expiry of token
+    try {
+      const verifiedRefresh = jwt.verify(
+        refresh,
+        process.env.JWT_REFRESH_TOKEN_SECRET_KEY
+      );
+      console.log('got here')
+
+      //extract userId
+      const userId = verifiedRefresh.id;
+
+      // make an axios call to retrieve session and userinfo
+      const currentSession = await this.sessionModel.findOne({ 
+        where: { 
+          userId,
+          currentToken:access,
+          currentRefresh:refresh 
+        },
+        include:[{ // we want to include these tables
+          model:this.model,
+        }]
+      });
+
+    if (currentSession.dataValues.isValid) { // if userId, token and refreshToken match the database
+      console.log('valid')
+      const payload = {
+        id: userId, 
+        fullName: currentSession.dataValues.user.fullName, //change this to match the above pulled data
+      };
+
+      const newToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET_KEY, {
+        expiresIn: 900,
+      });
+  
+      const newRefreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN_SECRET_KEY, {
+        expiresIn:"3 days"
+      });
+
+      //invalidate the previous tokens
+      await this.sessionModel.update(
+        {
+          isValid: false
+        },
+        {
+          where: { id: currentSession.dataValues.id }
+        }
+      )
+      //store the new tokens into database
+      await this.sessionModel.create({
+        userId,
+        currentToken: newToken,
+        currentRefresh: newRefreshToken,
+        isValid: true
+      })
+      
+      return res.json({
+        success: true, 
+        data: newToken, 
+        refresh: newRefreshToken, 
+        id: userId
+      });
+    } else {
+      await this.sessionModel.update(
+        {
+          isValid: false
+        },
+        {
+          where: { userId }
+        }
+      )
+      return res.status(403).json({error : true, msg: "Double use of refresh detected"})
+    }
+  } catch (err) { // refresh token has expired or unable to find user's data; poke user to login/signup
+      return res.status(401).json({ error: true, msg: err });
+    }
+  }
+
+  async jwtLogOut(req, res) {
+    console.log('we are logging out on backend')
+    //want to invalidate tokens - doesn't matter whether they are expired or not, so no need to check
+    //apiRequest will ignore logout route - no new tokens will be generated
+    //if logout is pressed normally, should just be a simple put req
+    //what if logout is pressed after expiry? we shouldn't check for expiry in this case; just put
+    //even if the token is stolen, it doesn't matter if the attacker uses this route; the user's next refresh will trigger the global logout
+    const { accessToken, refreshToken } = req.body;
+    const access = accessToken.split(" ")[1]
+    const refresh = refreshToken.split(" ")[1]
+
+    try {
+      //invalidate the previous tokens
+      await this.sessionModel.update(
+        {
+          isValid: false
+        },
+        {
+        where: { 
+          currentToken:access,
+          currentRefresh:refresh 
+        }
+      }
+      )
+      return res.json({ success: true});
+  } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
   }
 
   /** Test Route - this pulls Tough Guy's data */
@@ -180,7 +319,7 @@ class UsersController extends BaseController {
     const userId = req.userId;
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user, ownId:userId });
+      return res.json({ success: true, user, ownId:userId});
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
