@@ -14,6 +14,14 @@ class UsersRouter {
       "/jwtLogIn",
       this.controller.jwtLogInUser.bind(this.controller)
     );
+    router.post(
+      "/jwtRefresh",
+      this.controller.jwtRefresh.bind(this.controller)
+    );
+    router.put(
+      "/jwtLogOut",
+      this.controller.jwtLogOut.bind(this.controller)
+    );
 
     router.get("/testRoute", this.controller.testRoute.bind(this.controller))
 
@@ -89,10 +97,10 @@ class UsersRouter {
       "/clips",
       this.controller.postClip.bind(this.controller)
     );
-    router.put(
-      "/:userId/clips/:clipId",
-      this.controller.putClip.bind(this.controller)
-    );
+    // router.put(
+    //   "/:userId/clips/:clipId",
+    //   this.controller.putClip.bind(this.controller)
+    // );
     router.delete(
       "/clips/:clipId",
       this.controller.deleteClip.bind(this.controller)
@@ -103,14 +111,14 @@ class UsersRouter {
       "/:userId/artists",
       this.controller.getArtists.bind(this.controller)
     );
-    router.post(
-      "/:userId/artists/",
-      this.controller.addArtistInterest.bind(this.controller)
-    );
-    router.delete(
-      "/:userId/artists/:artistId",
-      this.controller.removeArtistInterest.bind(this.controller)
-    );
+    // router.post(
+    //   "/:userId/artists/",
+    //   this.controller.addArtistInterest.bind(this.controller)
+    // );
+    // router.delete(
+    //   "/:userId/artists/:artistId",
+    //   this.controller.removeArtistInterest.bind(this.controller)
+    // );
     router.put(
       "/:userId/artists/",
       this.controller.assignArtists.bind(this.controller)
@@ -121,14 +129,14 @@ class UsersRouter {
       "/:userId/genres",
       this.controller.getGenres.bind(this.controller)
     );
-    router.post(
-      "/:userId/genres/",
-      this.controller.addGenreInterest.bind(this.controller)
-    );
-    router.delete(
-      "/:userId/genres/:genreId",
-      this.controller.removeGenreInterest.bind(this.controller)
-    );
+    // router.post(
+    //   "/:userId/genres/",
+    //   this.controller.addGenreInterest.bind(this.controller)
+    // );
+    // router.delete(
+    //   "/:userId/genres/:genreId",
+    //   this.controller.removeGenreInterest.bind(this.controller)
+    // );
     router.put(
       "/:userId/genres/",
       this.controller.assignGenres.bind(this.controller)
@@ -138,18 +146,6 @@ class UsersRouter {
     router.get(
       "/:userId/instruments",
       this.controller.getInstruments.bind(this.controller)
-    );
-    router.post(
-      "/:userId/instruments/",
-      this.controller.addPlayedInstrument.bind(this.controller)
-    );
-    router.delete(
-      "/:userId/instruments/:instrumentId",
-      this.controller.removePlayedInstrument.bind(this.controller)
-    );
-    router.put(
-      "/:userId/instruments/:instrumentId",
-      this.controller.editInstrumentExperience.bind(this.controller)
     );
     router.put(
       "/:userId/instruments/",

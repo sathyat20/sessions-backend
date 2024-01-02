@@ -15,7 +15,8 @@ class UsersController extends BaseController {
     userInstrumentModel,
     chatroomModel,
     chatroomMessageModel,
-    attachmentModel
+    attachmentModel,
+    sessionModel
   ) {
     super(model);
     this.chatroomModel = chatroomModel;
@@ -26,6 +27,7 @@ class UsersController extends BaseController {
     this.instrumentModel = instrumentModel;
     this.userInstrumentModel = userInstrumentModel;
     this.attachmentModel = attachmentModel;
+    this.sessionModel = sessionModel;
   }
 
   /** Basic Auth */
@@ -116,9 +118,21 @@ class UsersController extends BaseController {
       };
 
       const token = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET_KEY, {
-        expiresIn: "5mins",
+        expiresIn: 900,
       });
-      return res.json({ success: true, data: token });
+
+      const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN_SECRET_KEY, {
+        expiresIn: "3 days"
+      });
+
+      await this.sessionModel.create({
+        userId:user.id,
+        currentToken: token,
+        currentRefresh: refreshToken,
+        isValid:true
+      });
+
+      return res.json({ success: true, data: token, refresh:refreshToken });
     } catch (err) {
       return res.status(400).json({ success: false, data: err.message });
     }
@@ -159,10 +173,135 @@ class UsersController extends BaseController {
     };
 
     const token = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET_KEY, {
-      expiresIn: "60mins",
+      expiresIn: 900,
     });
 
-    return res.json({ success: true, data: token, id: user.id });
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN_SECRET_KEY, {
+      expiresIn: "3 days"
+    });
+
+    await this.sessionModel.create({
+      userId:user.id,
+      currentToken: token,
+      currentRefresh: refreshToken,
+      isValid:true
+    });
+
+    return res.json({ success: true, data: token, refresh: refreshToken, id: user.id });
+  }
+
+  async jwtRefresh(req, res) {
+    const { accessToken, refreshToken } = req.body;
+    console.log(refreshToken)
+
+    const access = accessToken.split(" ")[1]
+    const refresh = refreshToken.split(" ")[1]
+    console.log(refresh)
+    //check expiry of token
+    try {
+      const verifiedRefresh = jwt.verify(
+        refresh,
+        process.env.JWT_REFRESH_TOKEN_SECRET_KEY
+      );
+      console.log('got here')
+
+      //extract userId
+      const userId = verifiedRefresh.id;
+
+      // make an axios call to retrieve session and userinfo
+      const currentSession = await this.sessionModel.findOne({ 
+        where: { 
+          userId,
+          currentToken:access,
+          currentRefresh:refresh 
+        },
+        include:[{ // we want to include these tables
+          model:this.model,
+        }]
+      });
+
+    if (currentSession.dataValues.isValid) { // if userId, token and refreshToken match the database
+      console.log('valid')
+      const payload = {
+        id: userId, 
+        fullName: currentSession.dataValues.user.fullName, //change this to match the above pulled data
+      };
+
+      const newToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET_KEY, {
+        expiresIn: 900,
+      });
+  
+      const newRefreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN_SECRET_KEY, {
+        expiresIn:"3 days"
+      });
+
+      //invalidate the previous tokens
+      await this.sessionModel.update(
+        {
+          isValid: false
+        },
+        {
+          where: { id: currentSession.dataValues.id }
+        }
+      )
+      //store the new tokens into database
+      await this.sessionModel.create({
+        userId,
+        currentToken: newToken,
+        currentRefresh: newRefreshToken,
+        isValid: true
+      })
+      
+      return res.json({
+        success: true, 
+        data: newToken, 
+        refresh: newRefreshToken, 
+        id: userId
+      });
+    } else {
+      await this.sessionModel.update(
+        {
+          isValid: false
+        },
+        {
+          where: { userId }
+        }
+      )
+      return res.status(403).json({error : true, msg: "Double use of refresh detected"})
+    }
+  } catch (err) { // refresh token has expired or unable to find user's data; poke user to login/signup
+      return res.status(401).json({ error: true, msg: err });
+    }
+  }
+
+  async jwtLogOut(req, res) {
+    console.log('we are logging out on backend')
+    //want to invalidate tokens - doesn't matter whether they are expired or not, so no need to check
+    //apiRequest will ignore logout route - no new tokens will be generated
+    //if logout is pressed normally, should just be a simple put req
+    //what if logout is pressed after expiry? we shouldn't check for expiry in this case; just put
+    //even if the token is stolen, it doesn't matter if the attacker uses this route; the user's next refresh will trigger the global logout
+    const { accessToken, refreshToken } = req.body;
+    const access = accessToken.split(" ")[1]
+    const refresh = refreshToken.split(" ")[1]
+
+    try {
+      //invalidate the previous tokens
+      await this.sessionModel.update(
+        {
+          isValid: false
+        },
+        {
+        where: { 
+          currentToken:access,
+          currentRefresh:refresh 
+        }
+      }
+      )
+      return res.json({ success: true});
+  } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
   }
 
   /** Test Route - this pulls Tough Guy's data */
@@ -180,7 +319,7 @@ class UsersController extends BaseController {
     const userId = req.userId;
     try {
       const user = await this.model.findByPk(userId);
-      return res.json({ success: true, user, ownId:userId });
+      return res.json({ success: true, user, ownId:userId});
     } catch (err) {
       return res.status(400).json({ error: true, msg: err });
     }
@@ -410,7 +549,6 @@ class UsersController extends BaseController {
 
     try {
       const firstUser = await this.model.findByPk(userId);
-      console.log(firstUser.fullName);
       const createdRoom = await this.chatroomModel.create({
         name,
         description,
@@ -430,21 +568,6 @@ class UsersController extends BaseController {
     }
   }
 
-//test route:
-//http://localhost:8080/users/createNewChatroomForMany
-
-//test body:
-// {
-//   "name": "foo",
-//   "description" : "bar",
-//   "genresPlayed" : "qux",
-//   "instrumentsWanted" : "quz",
-//   "memberIds" : {
-//     "1":"1",
-//     "2":"2",
-//     "3":"3"
-//   }
-// }
   async createChatroomForManyUsers(req, res) {
     const {memberIds, name, description, genresPlayed, instrumentsWanted } =req.body;
     //memberIds is an object with format {1:userId1, 2:userId2, 3:userId3, ....}
@@ -537,25 +660,25 @@ class UsersController extends BaseController {
     }
   }
 
-  async putClip(req, res) {
-    const { userId, clipId } = req.params;
-    const { hostUrl } = req.body;
-    try {
-      const editedClip = await this.videoClipModel.update(
-        { hostUrl },
-        {
-          where: {
-            id: clipId,
-            userId,
-          },
-          returning: true,
-        }
-      );
-      return res.json({ success: true, editedClip });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+  // async putClip(req, res) {
+  //   const { userId, clipId } = req.params;
+  //   const { hostUrl } = req.body;
+  //   try {
+  //     const editedClip = await this.videoClipModel.update(
+  //       { hostUrl },
+  //       {
+  //         where: {
+  //           id: clipId,
+  //           userId,
+  //         },
+  //         returning: true,
+  //       }
+  //     );
+  //     return res.json({ success: true, editedClip });
+  //   } catch (err) {
+  //     return res.status(400).json({ error: true, msg: err });
+  //   }
+  // }
 
   async deleteClip(req, res) {
     const { clipId } = req.params;
@@ -588,30 +711,30 @@ class UsersController extends BaseController {
     }
   }
 
-  async addArtistInterest(req, res) {
-    const { userId } = req.params;
-    const { artistId } = req.body;
-    console.log("accessed method");
-    try {
-      const addingUser = await this.model.findByPk(userId); // is there a way to eager loading this?
-      const newArtistInterest = await addingUser.addArtist(artistId);
-      console.log("added");
-      return res.json({ success: true, newArtistInterest });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+  // async addArtistInterest(req, res) {
+  //   const { userId } = req.params;
+  //   const { artistId } = req.body;
+  //   console.log("accessed method");
+  //   try {
+  //     const addingUser = await this.model.findByPk(userId); // is there a way to eager loading this?
+  //     const newArtistInterest = await addingUser.addArtist(artistId);
+  //     console.log("added");
+  //     return res.json({ success: true, newArtistInterest });
+  //   } catch (err) {
+  //     return res.status(400).json({ error: true, msg: err });
+  //   }
+  // }
 
-  async removeArtistInterest(req, res) {
-    const { userId, artistId } = req.params;
-    try {
-      const removingUser = await this.model.findByPk(userId); // is there a way to eager loading this? Not unless we want to call the joint model
-      await removingUser.removeArtist(artistId);
-      return res.json({ success: true });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+  // async removeArtistInterest(req, res) {
+  //   const { userId, artistId } = req.params;
+  //   try {
+  //     const removingUser = await this.model.findByPk(userId); // is there a way to eager loading this? Not unless we want to call the joint model
+  //     await removingUser.removeArtist(artistId);
+  //     return res.json({ success: true });
+  //   } catch (err) {
+  //     return res.status(400).json({ error: true, msg: err });
+  //   }
+  // }
 
   async getInstruments(req, res) {
     const { userId } = req.params;
@@ -623,7 +746,7 @@ class UsersController extends BaseController {
             attributes: ["id", "name"], //we only want name from instrument model
             through: {
               model: this.userInstrumentModel,
-              attributes: ["highestQualification", "qualificationInstitution"], //specify we only want instrumentExperience from userInstrument models
+              attributes: ["id","highestQualification", "qualificationInstitution"], //specify we only want instrumentExperience from userInstrument models
             },
           },
         ],
@@ -637,6 +760,7 @@ class UsersController extends BaseController {
         //converting into array containing instrument: experience
         console.log(instrument.userInstrument);
         playedInstruments.push({
+          id: instrument.userInstrument.id,
           instrument: {
             value: instrument.id,
             label: instrument.name,
@@ -655,54 +779,7 @@ class UsersController extends BaseController {
     }
   }
 
-  async addPlayedInstrument(req, res) {
-    const { userId } = req.params;
-    const { instrumentId, instrumentExperience } = req.body;
-    try {
-      const newPlayedInstrument = await this.userInstrumentModel.create({
-        userId,
-        instrumentId,
-        instrumentExperience,
-      });
-      return res.json({ success: true, newPlayedInstrument });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
-
-  async removePlayedInstrument(req, res) {
-    const { userId, instrumentId } = req.params;
-    try {
-      await this.userInstrumentModel.destroy({
-        where: {
-          userId,
-          instrumentId,
-        },
-      });
-      return res.json({ success: true });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
-
-  async editInstrumentExperience(req, res) {
-    const { userId, instrumentId } = req.params;
-    const { instrumentExperience } = req.body;
-    try {
-      await this.userInstrumentModel.update(
-        { instrumentExperience },
-        {
-          where: {
-            userId,
-            instrumentId,
-          },
-        }
-      );
-      return res.json({ success: true });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+ 
 
   async getGenres(req, res) {
     const { userId } = req.params;
@@ -718,29 +795,29 @@ class UsersController extends BaseController {
     }
   }
 
-  async addGenreInterest(req, res) {
-    const { userId } = req.params;
-    const { genreId } = req.body;
-    console.log("accessed method");
-    try {
-      const addingUser = await this.model.findByPk(userId); // is there a way to eager loading this?
-      const newGenreInterest = await addingUser.addGenre(genreId);
-      return res.json({ success: true, newGenreInterest });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+  // async addGenreInterest(req, res) {
+  //   const { userId } = req.params;
+  //   const { genreId } = req.body;
+  //   console.log("accessed method");
+  //   try {
+  //     const addingUser = await this.model.findByPk(userId); // is there a way to eager loading this?
+  //     const newGenreInterest = await addingUser.addGenre(genreId);
+  //     return res.json({ success: true, newGenreInterest });
+  //   } catch (err) {
+  //     return res.status(400).json({ error: true, msg: err });
+  //   }
+  // }
 
-  async removeGenreInterest(req, res) {
-    const { userId, genreId } = req.params;
-    try {
-      const removingUser = await this.model.findByPk(userId); // is there a way to eager loading this? Not unless we want to call the joint model
-      await removingUser.removeGenre(genreId);
-      return res.json({ success: true });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+  // async removeGenreInterest(req, res) {
+  //   const { userId, genreId } = req.params;
+  //   try {
+  //     const removingUser = await this.model.findByPk(userId); // is there a way to eager loading this? Not unless we want to call the joint model
+  //     await removingUser.removeGenre(genreId);
+  //     return res.json({ success: true });
+  //   } catch (err) {
+  //     return res.status(400).json({ error: true, msg: err });
+  //   }
+  // }
 
   async assignArtists(req, res) {
     const { userId } = req.params;
