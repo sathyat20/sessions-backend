@@ -16,7 +16,7 @@ module.exports = {
      {
        group_name: "Groove Quartet",
        is_public: true,
-       ensemble_type: "Jazz Band",
+       ensemble_type: "Band",
        career_status: "Currently looking for a new bassist",
        bio: "10 years of professional touring and monthly fanmeets. Groove Quartet comprises of four talented young hopefuls who aim to breathe new life into the Jazz scene",
        profile_picture_url:
@@ -27,7 +27,7 @@ module.exports = {
      {
        group_name: "Spring Seasons",
        is_public: false,
-       ensemble_type: "Rock Band",
+       ensemble_type: "Band",
        career_status: "Amateur",
        bio: "Up and coming rock band hailing from Turkey! Constantly looking to grow the team. Contact one of our members below!",
        profile_picture_url:
@@ -38,7 +38,7 @@ module.exports = {
      {
        group_name: "Evergreen Raisins",
        is_public: true,
-       ensemble_type: "Gospel Choir",
+       ensemble_type: "Choir",
        career_status: "Professional",
        bio: "10 years of professional touring and monthly fanmeets. Groove Quartet comprises of four talented young hopefuls who aim to breathe new life into the Jazz scene",
        profile_picture_url:
@@ -49,7 +49,7 @@ module.exports = {
      {
        group_name: "Hail Mary Jesus",
        is_public: false,
-       ensemble_type: "Gospel Duo",
+       ensemble_type: "Duo",
        career_status: "Professional",
        bio: "15 years of experience in touring the world and filling churches with our sweet voices and unique charms!",
        profile_picture_url:
@@ -60,7 +60,7 @@ module.exports = {
      {
        group_name: "Rap Game",
        is_public: true,
-       ensemble_type: "Rap Trio",
+       ensemble_type: "Trio",
        career_status: "Amateur",
        bio: "Newly formed rap trio with members from all around Southeast Asia, looking to breathe new life into the rap scene in Singapore!",
        profile_picture_url:

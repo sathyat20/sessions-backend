@@ -1,25 +1,59 @@
 const BaseController = require("./baseController");
 
 class InstrumentsController extends BaseController {
-  constructor(model) {
+  constructor(model, userInstrumentModel) {
     super(model); 
+    this.userInstrumentModel = userInstrumentModel;
   }
 
-  // async bulkAddInstruments(req, res) {
-  //   const { userId } = req.params;
-  //   const {instruments}  = req.body; // array of {instrument: {value: instrumentId, label: instrumentName},instrumentExperience: ""}
-  //   console.log(instruments)
-  //   const instrumentObjects = instruments.map((entry) => {
-  //     return { userId: parseInt(userId), instrumentId: entry.instrument.value, instrumentExperience: entry.instrumentExperience }
-  //   })
-  //   console.log(instrumentObjects)
-  //   try {
-  //     const newUserInstruments = await this.userInstrumentModel.bulkCreate(instrumentObjects); // need to create the model
-  //     return res.json({ success: true, newUserInstruments });
-  //   } catch (err) {
-  //     return res.status(400).json({ error: true, msg: err });
-  //   }
-  // }
+  async addPlayedInstrument(req, res) {
+    const userId  = req.userId;
+    const { instrumentId, highestQualification, qualificationInstitution } = req.body;
+    try {
+      const newPlayedInstrument = await this.userInstrumentModel.create({
+        userId,
+        instrumentId,
+        highestQualification,
+        qualificationInstitution
+      });
+      return res.json({ success: true, newPlayedInstrument });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async removePlayedInstrument(req, res) {
+    const { userInstrumentId } = req.params;
+    try {
+      await this.userInstrumentModel.destroy({
+        where: {
+          id: userInstrumentId
+        },
+      });
+      return res.json({ success: true });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
+  async editPlayedInstrument(req, res) {
+    const { userInstrumentId } = req.params;
+    const { instrumentId, highestQualification, qualificationInstitution } = req.body;
+    try {
+      await this.userInstrumentModel.update(
+        { instrumentId, highestQualification, qualificationInstitution},
+        {
+          where: {
+            id:userInstrumentId
+          },
+        }
+      );
+      return res.json({ success: true });
+    } catch (err) {
+      return res.status(400).json({ error: true, msg: err });
+    }
+  }
+
 }
 
 module.exports = InstrumentsController

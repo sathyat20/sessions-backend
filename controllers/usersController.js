@@ -549,7 +549,6 @@ class UsersController extends BaseController {
 
     try {
       const firstUser = await this.model.findByPk(userId);
-      console.log(firstUser.fullName);
       const createdRoom = await this.chatroomModel.create({
         name,
         description,
@@ -569,21 +568,6 @@ class UsersController extends BaseController {
     }
   }
 
-//test route:
-//http://localhost:8080/users/createNewChatroomForMany
-
-//test body:
-// {
-//   "name": "foo",
-//   "description" : "bar",
-//   "genresPlayed" : "qux",
-//   "instrumentsWanted" : "quz",
-//   "memberIds" : {
-//     "1":"1",
-//     "2":"2",
-//     "3":"3"
-//   }
-// }
   async createChatroomForManyUsers(req, res) {
     const {memberIds, name, description, genresPlayed, instrumentsWanted } =req.body;
     //memberIds is an object with format {1:userId1, 2:userId2, 3:userId3, ....}
@@ -676,25 +660,25 @@ class UsersController extends BaseController {
     }
   }
 
-  async putClip(req, res) {
-    const { userId, clipId } = req.params;
-    const { hostUrl } = req.body;
-    try {
-      const editedClip = await this.videoClipModel.update(
-        { hostUrl },
-        {
-          where: {
-            id: clipId,
-            userId,
-          },
-          returning: true,
-        }
-      );
-      return res.json({ success: true, editedClip });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+  // async putClip(req, res) {
+  //   const { userId, clipId } = req.params;
+  //   const { hostUrl } = req.body;
+  //   try {
+  //     const editedClip = await this.videoClipModel.update(
+  //       { hostUrl },
+  //       {
+  //         where: {
+  //           id: clipId,
+  //           userId,
+  //         },
+  //         returning: true,
+  //       }
+  //     );
+  //     return res.json({ success: true, editedClip });
+  //   } catch (err) {
+  //     return res.status(400).json({ error: true, msg: err });
+  //   }
+  // }
 
   async deleteClip(req, res) {
     const { clipId } = req.params;
@@ -727,30 +711,30 @@ class UsersController extends BaseController {
     }
   }
 
-  async addArtistInterest(req, res) {
-    const { userId } = req.params;
-    const { artistId } = req.body;
-    console.log("accessed method");
-    try {
-      const addingUser = await this.model.findByPk(userId); // is there a way to eager loading this?
-      const newArtistInterest = await addingUser.addArtist(artistId);
-      console.log("added");
-      return res.json({ success: true, newArtistInterest });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+  // async addArtistInterest(req, res) {
+  //   const { userId } = req.params;
+  //   const { artistId } = req.body;
+  //   console.log("accessed method");
+  //   try {
+  //     const addingUser = await this.model.findByPk(userId); // is there a way to eager loading this?
+  //     const newArtistInterest = await addingUser.addArtist(artistId);
+  //     console.log("added");
+  //     return res.json({ success: true, newArtistInterest });
+  //   } catch (err) {
+  //     return res.status(400).json({ error: true, msg: err });
+  //   }
+  // }
 
-  async removeArtistInterest(req, res) {
-    const { userId, artistId } = req.params;
-    try {
-      const removingUser = await this.model.findByPk(userId); // is there a way to eager loading this? Not unless we want to call the joint model
-      await removingUser.removeArtist(artistId);
-      return res.json({ success: true });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+  // async removeArtistInterest(req, res) {
+  //   const { userId, artistId } = req.params;
+  //   try {
+  //     const removingUser = await this.model.findByPk(userId); // is there a way to eager loading this? Not unless we want to call the joint model
+  //     await removingUser.removeArtist(artistId);
+  //     return res.json({ success: true });
+  //   } catch (err) {
+  //     return res.status(400).json({ error: true, msg: err });
+  //   }
+  // }
 
   async getInstruments(req, res) {
     const { userId } = req.params;
@@ -762,7 +746,7 @@ class UsersController extends BaseController {
             attributes: ["id", "name"], //we only want name from instrument model
             through: {
               model: this.userInstrumentModel,
-              attributes: ["highestQualification", "qualificationInstitution"], //specify we only want instrumentExperience from userInstrument models
+              attributes: ["id","highestQualification", "qualificationInstitution"], //specify we only want instrumentExperience from userInstrument models
             },
           },
         ],
@@ -776,6 +760,7 @@ class UsersController extends BaseController {
         //converting into array containing instrument: experience
         console.log(instrument.userInstrument);
         playedInstruments.push({
+          id: instrument.userInstrument.id,
           instrument: {
             value: instrument.id,
             label: instrument.name,
@@ -794,54 +779,7 @@ class UsersController extends BaseController {
     }
   }
 
-  async addPlayedInstrument(req, res) {
-    const { userId } = req.params;
-    const { instrumentId, instrumentExperience } = req.body;
-    try {
-      const newPlayedInstrument = await this.userInstrumentModel.create({
-        userId,
-        instrumentId,
-        instrumentExperience,
-      });
-      return res.json({ success: true, newPlayedInstrument });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
-
-  async removePlayedInstrument(req, res) {
-    const { userId, instrumentId } = req.params;
-    try {
-      await this.userInstrumentModel.destroy({
-        where: {
-          userId,
-          instrumentId,
-        },
-      });
-      return res.json({ success: true });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
-
-  async editInstrumentExperience(req, res) {
-    const { userId, instrumentId } = req.params;
-    const { instrumentExperience } = req.body;
-    try {
-      await this.userInstrumentModel.update(
-        { instrumentExperience },
-        {
-          where: {
-            userId,
-            instrumentId,
-          },
-        }
-      );
-      return res.json({ success: true });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+ 
 
   async getGenres(req, res) {
     const { userId } = req.params;
@@ -857,29 +795,29 @@ class UsersController extends BaseController {
     }
   }
 
-  async addGenreInterest(req, res) {
-    const { userId } = req.params;
-    const { genreId } = req.body;
-    console.log("accessed method");
-    try {
-      const addingUser = await this.model.findByPk(userId); // is there a way to eager loading this?
-      const newGenreInterest = await addingUser.addGenre(genreId);
-      return res.json({ success: true, newGenreInterest });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+  // async addGenreInterest(req, res) {
+  //   const { userId } = req.params;
+  //   const { genreId } = req.body;
+  //   console.log("accessed method");
+  //   try {
+  //     const addingUser = await this.model.findByPk(userId); // is there a way to eager loading this?
+  //     const newGenreInterest = await addingUser.addGenre(genreId);
+  //     return res.json({ success: true, newGenreInterest });
+  //   } catch (err) {
+  //     return res.status(400).json({ error: true, msg: err });
+  //   }
+  // }
 
-  async removeGenreInterest(req, res) {
-    const { userId, genreId } = req.params;
-    try {
-      const removingUser = await this.model.findByPk(userId); // is there a way to eager loading this? Not unless we want to call the joint model
-      await removingUser.removeGenre(genreId);
-      return res.json({ success: true });
-    } catch (err) {
-      return res.status(400).json({ error: true, msg: err });
-    }
-  }
+  // async removeGenreInterest(req, res) {
+  //   const { userId, genreId } = req.params;
+  //   try {
+  //     const removingUser = await this.model.findByPk(userId); // is there a way to eager loading this? Not unless we want to call the joint model
+  //     await removingUser.removeGenre(genreId);
+  //     return res.json({ success: true });
+  //   } catch (err) {
+  //     return res.status(400).json({ error: true, msg: err });
+  //   }
+  // }
 
   async assignArtists(req, res) {
     const { userId } = req.params;
